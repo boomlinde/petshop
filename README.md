@@ -1,8 +1,9 @@
 Petshop
 =======
 
-Petshop is a Commodore 64 PETSCII editor. It implements few but powerful
-editing features to enable quick editing using the keyboard.
+Petshop is a PETSCII editor targetting the Commodore 64. It implements
+few but powerful editing features to enable quick editing using the
+keyboard.
 
 The central concept of the editor is the selection. This is a rectangle
 that most editing commands apply to. The selection can be moved around
@@ -65,3 +66,9 @@ Commands
     C                 - Toggle between lower/upper case
     F1                - Save project
     F2                - Load project
+
+Todo
+----
+
+- Export to SEQ
+- Export to executable PRG
