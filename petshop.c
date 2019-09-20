@@ -170,6 +170,8 @@ redo:
 				lua_pushstring(L, "key"); lua_pushstring(L, event.text.text); lua_settable(L, -3);
 				handle_event(L);
 				break;
+			case SDL_WINDOWEVENT:
+				break;
 			default:
 				goto redo;
 			}
