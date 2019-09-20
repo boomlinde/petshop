@@ -43,7 +43,7 @@ Commands
     Ctrl+Q            - quit
     Cursor keys, hjkl - Move selection (shifted: change selection size)
     Backspace         - Reset selection size to 1x1
-    Y, Space          - Yank selection
+    y, Space          - Yank selection
     Return            - Open/close palette
     Tab               - Swap between main picture and scratchpad
     u                 - Undo last command
@@ -54,7 +54,7 @@ Commands
                         (shifted: don't paint yanked spaces ($20))
     s                 - Paint yanked colors over selection
                         (shifted: don't paint yanked spaces ($20))
-    I                 - Invert selected characters (EOR $80)
+    I                 - Invert selected characters (EOR #$80)
     x                 - Flip selected characters horizontally
     X                 - Flip selected characters vertically
     b                 - Set background color to foreground color of
