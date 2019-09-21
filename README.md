@@ -42,8 +42,8 @@ Commands
 
     Ctrl+Q            - quit
     Cursor keys, hjkl - Move selection
-	                    (shifted: change selection size)
-	                    (ctrl: roll selection)
+                        (shifted: change selection size)
+                        (ctrl: roll selection)
     Backspace         - Reset selection size to 1x1
     y, Space          - Yank selection
     Return            - Open/close palette
@@ -65,6 +65,7 @@ Commands
                         upper left corner of selection
     i<character>      - Fill selection with character and move
                         selection right one step
+    t                 - Fit selection to yanked
     C                 - Toggle between lower/upper case
     F1                - Save project
     F2                - Load project
@@ -72,5 +73,5 @@ Commands
 Todo
 ----
 
-- Export to SEQ
-- Export to executable PRG
+-   Export to SEQ
+-   Export to executable PRG

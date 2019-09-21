@@ -451,6 +451,7 @@ editmode = {
 		{ ev.KEYDOWN, 'F1', function () editmode:initsave() end },
 		{ ev.KEYDOWN, 'F2', function () editmode:initload() end },
 		{ ev.TEXT, 'C', function () setcase(not lowercase); end },
+		{ ev.TEXT, 't', function ()  editmode:fittobrush() end },
 	},
 
 	draw = function (self)
@@ -649,6 +650,20 @@ editmode = {
 	reset_wh = function (self)
 		self.marker_w = 1
 		self.marker_h = 1
+	end,
+
+	fittobrush = function (self)
+		if self.palette then return end
+		self.marker_w = self.brush.w
+		self.marker_h = self.brush.h
+		local xoffset = self.marker_x + self.marker_w
+		local yoffset = self.marker_y + self.marker_h
+		if xoffset > 40 then
+			self.marker_x = self.marker_x - (xoffset - 40)
+		end
+		if yoffset > 25 then
+			self.marker_y = self.marker_y - (yoffset - 25)
+		end
 	end,
 
 	roll = function (self, xadd, yadd)
