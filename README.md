@@ -11,11 +11,19 @@ and grown with the shift and cursor keys. The selection can then be
 copied, painted over, inverted, flipped, extended...see below for a full
 list of commands.
 
+The most fundamental selection command is yanking. This copies the
+selected characters to an invisible buffer which can then be copied back
+to the picture. When the yank buffer is copied back to the screen
+(e.g. with the `f` command), if the selection is smaller than the yanked
+buffer, only the portion fitting the selection is copied. If the
+selection is larger than the yanked buffer, the yanked buffer is instead
+repeated to fill the selection.
+
 Another major concept is the palette. The palette can be brought up with
 the return key. The palette shows all available characters and colors.
 You can selection commands while the palette is enabled, but commands
 that affect the picture don't have an effect. When the palette is closed
-with the return key again, the selection is automatically copied.
+with the return key again, the selection is automatically yanked.
 
 Finally, there are two pictures. One main picture and a scratch pad. The
 currently visible picture can bet toggled with the tab key. Both
@@ -36,6 +44,11 @@ Running
 -------
 
     $ petshop [project file]
+
+If the project file is omitted, petshop starts with a blank slate with a
+default path pointing at the current working directory ("blank.pet").
+Nothing will actually be loaded, even if a file named "blank.pet"
+exists.
 
 Commands
 --------
