@@ -1,3 +1,6 @@
+-- Lua 5.3 compatibility
+if unpack == nil then unpack = table.unpack end
+
 maxundo = 20
 
 lshift = false
