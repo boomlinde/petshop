@@ -3,9 +3,7 @@
 
 #include <SDL.h>
 
-SDL_Surface *font;
-
 SDL_Rect *char_rect(int c);
-char font_init(SDL_PixelFormat *format);
+char font_init(SDL_PixelFormat *format, SDL_Surface **font);
 
 #endif

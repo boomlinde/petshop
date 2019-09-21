@@ -23,29 +23,29 @@ set_pixel(SDL_Surface *surface, int x, int y, uint32_t pixel)
 }
 
 char
-font_init(SDL_PixelFormat *format)
+font_init(SDL_PixelFormat *format, SDL_Surface **font)
 {
 	int x, y;
 
-	font = SDL_CreateRGBSurface(
+	*font = SDL_CreateRGBSurface(
 			0, 128, 256, 32,
 			format->Rmask,
 			format->Gmask,
 			format->Bmask,
 			~(format->Rmask | format->Gmask | format->Bmask));
 
-	if (font == NULL) return 1;
+	if (*font == NULL) return 1;
 
 	for (y = 0; y < 256; y++) {
 		for (x = 0; x < 128; x++) {
 			if (chargen_get(x, y)) {
-				set_pixel(font, x, y, 0xffffffff);
+				set_pixel(*font, x, y, 0xffffffff);
 			} else {
-				set_pixel(font, x, y, 0);
+				set_pixel(*font, x, y, 0);
 			}
 		}
 	}
 
-	SDL_SetSurfaceBlendMode(font, SDL_BLENDMODE_NONE);
+	SDL_SetSurfaceBlendMode(*font, SDL_BLENDMODE_NONE);
 	return 0;
 }

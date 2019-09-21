@@ -23,9 +23,8 @@ static const SDL_Color colors[] = {
 
 
 SDL_Surface *
-screen_redraw(screen_t *screen)
+screen_redraw(screen_t *screen, SDL_Surface **surface, SDL_Surface *font)
 {
-	static SDL_Surface *rendered = NULL;
 	SDL_Rect tmp_rect;
 	SDL_Color const *tmp_rgb;
 	SDL_Surface *tmp_chr;
@@ -35,8 +34,8 @@ screen_redraw(screen_t *screen)
 	SDL_PixelFormat *format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
 
 	// init surface
-	if (rendered == NULL) {
-		rendered = SDL_CreateRGBSurface(
+	if (*surface == NULL) {
+		*surface = SDL_CreateRGBSurface(
 				0, 368, 256, format->BitsPerPixel,
 				format->Rmask,
 				format->Gmask,
@@ -46,7 +45,7 @@ screen_redraw(screen_t *screen)
 
 	// draw border
 	tmp_rgb = &colors[screen->border];
-	SDL_FillRect(rendered,
+	SDL_FillRect(*surface,
 			NULL,
 			SDL_MapRGB(format,
 					tmp_rgb->r,
@@ -60,7 +59,7 @@ screen_redraw(screen_t *screen)
 	tmp_rect.h = 25*8;
 
 	tmp_rgb = &colors[screen->background];
-	SDL_FillRect(rendered,
+	SDL_FillRect(*surface,
 			&tmp_rect,
 			SDL_MapRGB(format,
 					tmp_rgb->r,
@@ -100,7 +99,7 @@ screen_redraw(screen_t *screen)
 
 		if (marked) {
 			tmp_rgb = &colors[screen->background];
-			SDL_FillRect(rendered,
+			SDL_FillRect(*surface,
 					&tmp_rect,
 					SDL_MapRGB(format,
 							tmp_rgb->r ^ 0xff,
@@ -122,12 +121,12 @@ screen_redraw(screen_t *screen)
 		else
 			SDL_BlitSurface(font, char_rect(screen->chars[i]), tmp_chr, NULL);
 		SDL_BlitSurface(tmp_chr2, NULL, tmp_chr, NULL);
-		SDL_BlitSurface(tmp_chr, NULL, rendered, &tmp_rect);
+		SDL_BlitSurface(tmp_chr, NULL, *surface, &tmp_rect);
 	}
 
 	SDL_FreeSurface(tmp_chr);
 	SDL_FreeSurface(tmp_chr2);
 	SDL_FreeFormat(format);
 
-	return rendered;
+	return *surface;
 }

@@ -34,6 +34,8 @@ int scale = 3;
 SDL_Window *window = NULL;
 SDL_Surface *wscreen = NULL;
 screen_t *pscreen = NULL;
+SDL_Surface *picsurface = NULL;
+SDL_Surface *font = NULL;
 
 int
 main(int argc, char **argv)
@@ -60,7 +62,7 @@ main(int argc, char **argv)
 	}
 	
 	wscreen = SDL_GetWindowSurface(window);
-	if (font_init(wscreen->format)) {
+	if (font_init(wscreen->format, &font)) {
 		err = 1;
 		goto exit;
 	}
@@ -140,7 +142,7 @@ main(int argc, char **argv)
 	SDL_FlushEvents(0, SDL_LASTEVENT);
 	SDL_StartTextInput();
 	while (running) {
-		ui_draw_pic(wscreen, pscreen, SCREEN_WIDTH, SCREEN_HEIGHT);
+		ui_draw_pic(wscreen, pscreen, SCREEN_WIDTH, SCREEN_HEIGHT, &picsurface, font);
 		SDL_UpdateWindowSurface(window);
 redo:
 		if (SDL_WaitEvent(&event)) {
@@ -181,7 +183,9 @@ redo:
 	SDL_StopTextInput();
 
 exit:
+	if (pscreen) free(pscreen);
 	if (font != NULL) SDL_FreeSurface(font);
+	if (picsurface != NULL) SDL_FreeSurface(picsurface);
 	if (window != NULL) SDL_DestroyWindow(window);
 	SDL_Quit();
 	lua_close(L);
