@@ -41,7 +41,9 @@ Commands
 --------
 
     Ctrl+Q            - quit
-    Cursor keys, hjkl - Move selection (shifted: change selection size)
+    Cursor keys, hjkl - Move selection
+	                    (shifted: change selection size)
+	                    (ctrl: roll selection)
     Backspace         - Reset selection size to 1x1
     y, Space          - Yank selection
     Return            - Open/close palette

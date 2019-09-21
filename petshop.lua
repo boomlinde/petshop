@@ -651,10 +651,31 @@ editmode = {
 		self.marker_h = 1
 	end,
 
+	roll = function (self, xadd, yadd)
+			if self.palette then return end
+			local pics = {unpack(tip(current_picture))}
+			local frame = new_frame()
+			for y = 0,self.marker_h-1 do
+				for x = 0,self.marker_w-1 do
+					local sx = ((x + xadd) % self.marker_w) + self.marker_x
+					local sy = ((y + yadd) % self.marker_h) + self.marker_y
+					local c = getpictures(pics, sx, sy)
+					local mx = x + self.marker_x
+					local my = y + self.marker_y
+					frame.chars[mx + my * 40] = c.char
+					frame.colors[mx + my * 40] = c.color
+				end
+			end
+			add_frame(current_picture, frame)
+			self:draw()
+	end,
+
 	cursor_up = function (self)
 		local min
 		if self.palette then min = 1 else min = 0 end
-		if shift then
+		if ctrl then
+			self:roll(0, 1)
+		elseif shift then
 			if self.marker_h > 1 then self.marker_h = self.marker_h - 1 end
 		else
 			if self.marker_y > min then self.marker_y = self.marker_y - 1 end
@@ -664,7 +685,9 @@ editmode = {
 	cursor_down = function (self)
 		local max
 		if self.palette then max = 18 else max = 25 end
-		if shift then
+		if ctrl then
+			self:roll(0, -1)
+		elseif shift then
 			if self.marker_h + self.marker_y < max then self.marker_h = self.marker_h + 1 end
 		else
 			if self.marker_h + self.marker_y < max then self.marker_y = self.marker_y + 1 end
@@ -674,7 +697,9 @@ editmode = {
 	cursor_left = function (self)
 		local min
 		if self.palette then min = 1 else min = 0 end
-		if shift then
+		if ctrl then
+			self:roll(1, 0)
+		elseif shift then
 			if self.marker_w > 1 then self.marker_w = self.marker_w - 1 end
 		else
 			if self.marker_x > min then self.marker_x = self.marker_x - 1 end
@@ -684,7 +709,9 @@ editmode = {
 	cursor_right = function (self)
 		local max
 		if self.palette then max = 17 else max = 40 end
-		if shift and not self.insert then
+		if ctrl then
+			self:roll(-1, 0)
+		elseif shift and not self.insert then
 			if self.marker_w + self.marker_x < max then self.marker_w = self.marker_w + 1 end
 		else
 			if self.marker_w + self.marker_x < max then self.marker_x = self.marker_x + 1 end
