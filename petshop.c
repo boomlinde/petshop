@@ -41,7 +41,7 @@ int
 main(int argc, char **argv)
 {
 	SDL_Event event;
-	lua_State *L;
+	lua_State *L = NULL;
 	int i, status;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -132,7 +132,7 @@ main(int argc, char **argv)
 	}
 	lua_setglobal(L, "args");
 
-	status = luaL_dostring(L, code_lua);
+	status = luaL_dostring(L, (char *)code_lua);
 	if (status) {
 		fprintf(stderr, "Couldn't load script: %s\n", lua_tostring(L, -1));
 		err = 1;
@@ -188,7 +188,7 @@ exit:
 	if (picsurface != NULL) SDL_FreeSurface(picsurface);
 	if (window != NULL) SDL_DestroyWindow(window);
 	SDL_Quit();
-	lua_close(L);
+	if (L) lua_close(L);
 	return err;
 }
 
