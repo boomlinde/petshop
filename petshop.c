@@ -199,9 +199,7 @@ l_setscreen(lua_State *L)
 	int x, y, c;
 	x = (int)luaL_checknumber(L, 1);
 	y = (int)luaL_checknumber(L, 2);
-	c = 0xff & (int)(luaL_checknumber(L, 3));
-	if (x < 0 || x >= 40) return 0;
-	if (y < 0 || y >= 25) return 0;
+	c = (int)(luaL_checknumber(L, 3));
 	pscreen->chars[x + y * 40] = (uint8_t)c;
 	return 0;
 }
@@ -212,9 +210,7 @@ l_setcolor(lua_State *L)
 	int x, y, c;
 	x = (int)luaL_checknumber(L, 1);
 	y = (int)luaL_checknumber(L, 2);
-	c = 0xf & (int)(luaL_checknumber(L, 3));
-	if (x < 0 || x >= 40) return 0;
-	if (y < 0 || y >= 25) return 0;
+	c = (int)(luaL_checknumber(L, 3));
 	pscreen->colors[x + y * 40] = (uint8_t)c;
 	return 0;
 }
