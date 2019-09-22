@@ -26,8 +26,8 @@ that affect the picture don't have an effect. When the palette is closed
 with the return key again, the selection is automatically yanked.
 
 Finally, there are two pictures. One main picture and a scratch pad. The
-currently visible picture can bet toggled with the tab key. Both
-pictures are saved when the project is saved.
+scratchpad is never visible, but can be swapped with the main picture by
+pressing tab. Both the scratchpad and the picture are saved.
 
 File format
 -----------

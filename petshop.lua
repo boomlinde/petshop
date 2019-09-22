@@ -295,7 +295,6 @@ function loadproject(filename)
 	setborder(bordercolor:byte())
 	picture = pic
 	scratch = scr
-	current_picture = picture
 
 	return true
 end
@@ -438,8 +437,8 @@ editmode = {
 		{ ev.KEYDOWN, 'Space', function () editmode:copy() end },
 		{ ev.KEYDOWN, 'Return', function () editmode:togglepalette() end },
 		{ ev.KEYDOWN, 'Tab', function () editmode:togglescratch() end },
-		{ ev.TEXT, 'u', function () undo(current_picture); editmode:draw() end },
-		{ ev.TEXT, 'U', function () redo(current_picture); editmode:draw() end },
+		{ ev.TEXT, 'u', function () undo(picture); editmode:draw() end },
+		{ ev.TEXT, 'U', function () redo(picture); editmode:draw() end },
 		{ ev.TEXT, 'f', function () editmode:paintbrush(false, true, true) end },
 		{ ev.TEXT, 'F', function () editmode:paintbrush(true, true, true) end },
 		{ ev.TEXT, 'd', function () editmode:paintbrush(false, true, false) end },
@@ -457,7 +456,7 @@ editmode = {
 	},
 
 	draw = function (self)
-		local pics = {unpack(tip(current_picture))}
+		local pics = {unpack(tip(picture))}
 		if self.palette then table.insert(pics, palettepic) end
 		if self.prompting then table.insert(pics, promptpic) end
 		redraw_prompt()
@@ -489,7 +488,7 @@ editmode = {
 
 	flip = function (self)
 		if self.palette then return end
-		local pics = {unpack(tip(current_picture))}
+		local pics = {unpack(tip(picture))}
 		local frame = new_frame()
 
 		for y = self.marker_y,self.marker_y+self.marker_h-1 do
@@ -507,12 +506,12 @@ editmode = {
 			end
 		end
 
-		add_frame(current_picture, frame)
+		add_frame(picture, frame)
 		self:draw()
 	end,
 
 	setbgborder = function (self)
-		local pics = {unpack(tip(current_picture))}
+		local pics = {unpack(tip(picture))}
 		if self.palette then table.insert(pics, palettepic) end
 		local c = getpictures(pics, self.marker_x, self.marker_y).color
 		if shift then
@@ -525,7 +524,7 @@ editmode = {
 	invert = function (self)
 		if self.palette then return end
 		local frame = new_frame()
-		local pics = {unpack(tip(current_picture))}
+		local pics = {unpack(tip(picture))}
 		for y = self.marker_y,self.marker_y+self.marker_h-1 do
 			for x = self.marker_x,self.marker_x+self.marker_w-1 do
 				local c = getpictures(pics, x, y).char
@@ -538,16 +537,12 @@ editmode = {
 				frame.chars[index] = c
 			end
 		end
-		add_frame(current_picture, frame)
+		add_frame(picture, frame)
 		self:draw()
 	end,
 
 	togglescratch = function (self)
-		if current_picture == picture then
-			current_picture = scratch
-		else
-			current_picture = picture
-		end
+		picture, scratch = scratch, picture
 		self:draw()
 	end,
 
@@ -589,7 +584,7 @@ editmode = {
 						frame.colors[x + 40 * y] = self.brush.colors[0]
 					end
 				end
-				add_frame(current_picture, frame)
+				add_frame(picture, frame)
 				self:draw()
 				self:cursor_right()
 				self.insert = false
@@ -621,7 +616,7 @@ editmode = {
 		self.brush.h = self.marker_h
 		self.brush.chars = {}
 		self.brush.colors = {}
-		local pics = {unpack(tip(current_picture))}
+		local pics = {unpack(tip(picture))}
 		if self.palette then table.insert(pics, palettepic) end
 		for y = 0,self.marker_h-1 do
 			for x = 0,self.marker_w-1 do
@@ -655,7 +650,7 @@ editmode = {
 				end
 			end
 		end
-		add_frame(current_picture, frame)
+		add_frame(picture, frame)
 		self:draw()
 	end,
 
@@ -680,7 +675,7 @@ editmode = {
 
 	roll = function (self, xadd, yadd)
 			if self.palette then return end
-			local pics = {unpack(tip(current_picture))}
+			local pics = {unpack(tip(picture))}
 			local frame = new_frame()
 			for y = 0,self.marker_h-1 do
 				for x = 0,self.marker_w-1 do
@@ -693,7 +688,7 @@ editmode = {
 					frame.colors[mx + my * 40] = c.color
 				end
 			end
-			add_frame(current_picture, frame)
+			add_frame(picture, frame)
 			self:draw()
 	end,
 
@@ -746,8 +741,7 @@ editmode = {
 	end,
 }
 
-current_picture = picture
-drawpictures({unpack(tip(current_picture))})
+drawpictures({unpack(tip(picture))})
 ht.setmarker(editmode.marker_x, editmode.marker_y, editmode.marker_w, editmode.marker_h)
 
 local current_mode = editmode
