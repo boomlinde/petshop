@@ -1,5 +1,5 @@
 BIN = petshop
-PKG = sdl2 lua5.1
+PKG = sdl2 luajit
 
 SRC      = $(wildcard *.c)
 HEADERS  = $(wildcard *.h)
