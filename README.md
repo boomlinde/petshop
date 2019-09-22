@@ -83,8 +83,17 @@ Commands
     F1                - Save project
     F2                - Load project
 
+Generate an executable
+----------------------
+
+If you want to display the image on a Commodore 64, you can concatenate
+the project to the included `petstub.prg`. Example:
+
+    petshop image.pet
+    # Exit and save
+    cat petstub.prg image.pet > image.prg
+
 Todo
 ----
 
 -   Export to SEQ
--   Export to executable PRG
