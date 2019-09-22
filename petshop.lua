@@ -11,7 +11,6 @@ lctrl = false
 rctrl = false
 ctrl = false
 
-fgcolor = 0xe
 bgcolor = 0x6
 bordercolor = 0xe
 prompt = 'save: '
@@ -199,12 +198,13 @@ for x = 1,16 do
 	palettepic.colors[x + 17 * 40] = x - 1
 	palettepic.chars[x + 17 * 40] = 0xa0
 end
-function recolor_palette()
+function recolor_palette(c)
 	for y = 1,16 do
 		for x = 1,16 do
-			palettepic.colors[x + y * 40] = fgcolor
+			palettepic.colors[x + y * 40] = c
 		end
 	end
+	print('recolor!')
 end
 recolor_palette()
 for y = 0,15 do
@@ -419,7 +419,7 @@ editmode = {
 	tmp_y = 1,
 	tmp_w = 1,
 	tmp_h = 1,
-	brush = { w = 1, h = 1, chars = { [0] = 0xa0 }, colors = { [0] = 0x1 } },
+	brush = { w = 1, h = 1, chars = { [0] = 0xa0 }, colors = { [0] = 0xe } },
 	palette = false,
 	insert = false,
 	prompting = false,
@@ -468,6 +468,10 @@ editmode = {
 	initsave = function (self)
 		editmode.prompting = true
 		prompt = "save: "
+		mx, my = redraw_prompt()
+		ht.setmarker(mx, my, 1, 1)
+		ht.setlowercase(true)
+		self:draw()
 		self.afterprompt = function ()
 			saveproject(filename)
 		end
@@ -475,9 +479,12 @@ editmode = {
 	initload = function (self)
 		editmode.prompting = true
 		prompt = "load: "
+		mx, my = redraw_prompt()
+		ht.setmarker(mx, my, 1, 1)
+		ht.setlowercase(true)
+		self:draw()
 		self.afterprompt = function ()
 			loadproject(filename)
-			self:draw()
 		end
 	end,
 
@@ -558,6 +565,7 @@ editmode = {
 					oldfilename = filename
 					if self.afterprompt ~= nil then
 						self:afterprompt()
+						self:draw()
 					end
 				elseif event.key == 'Backspace' then
 					filename = string.sub(filename, 1, #filename - 1)
@@ -572,7 +580,6 @@ editmode = {
 			mx, my = redraw_prompt()
 			ht.setmarker(mx, my, 1, 1)
 			self:draw()
-			if self.prompting then return end
 		elseif self.insert then
 			if event.t == ev.TEXT then
 				local char = ascii2scr(event.key)[1]
@@ -580,7 +587,7 @@ editmode = {
 				for y = self.marker_y,self.marker_y+self.marker_h-1 do
 					for x = self.marker_x,self.marker_x+self.marker_w-1 do
 						frame.chars[x + 40 * y] = char
-						frame.colors[x + 40 * y] = fgcolor
+						frame.colors[x + 40 * y] = self.brush.colors[0]
 					end
 				end
 				add_frame(current_picture, frame)
@@ -591,17 +598,16 @@ editmode = {
 		else
 			expect(self.bindings, event)
 		end
-		ht.setmarker(self.marker_x, self.marker_y, self.marker_w, self.marker_h)
+		if not self.prompting then
+			ht.setmarker(self.marker_x, self.marker_y, self.marker_w, self.marker_h)
+		end
 	end,
 
 	togglepalette = function (self)
 		if self.palette then
-			local pics = {unpack(tip(current_picture))}
-			table.insert(pics, palettepic)
-			local c = getpictures(pics, self.marker_x, self.marker_y).color
-			fgcolor = c
-			recolor_palette()
 			self:copy()
+		else
+			recolor_palette(self.brush.colors[0])
 		end
 		self.palette = not self.palette
 		self.tmp_x, self.marker_x = self.marker_x, self.tmp_x
@@ -626,6 +632,10 @@ editmode = {
 				self.brush.colors[x + y * self.brush.w] = c.color
 				self.brush.chars[x + y * self.brush.w] = c.char
 			end
+		end
+		if self.palette and self.marker_y == 17 then
+			recolor_palette(self.brush.colors[0])
+			self:draw()
 		end
 	end,
 
