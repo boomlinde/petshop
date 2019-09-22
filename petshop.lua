@@ -204,7 +204,6 @@ function recolor_palette(c)
 			palettepic.colors[x + y * 40] = c
 		end
 	end
-	print('recolor!')
 end
 recolor_palette()
 for y = 0,15 do
