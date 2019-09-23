@@ -43,6 +43,9 @@ main(int argc, char **argv)
 	SDL_Event event;
 	lua_State *L = NULL;
 	int i, status;
+	SDL_PixelFormat *format = NULL;
+	SDL_Surface *tmp_chr1 = NULL;
+	SDL_Surface *tmp_chr2 = NULL;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "SDL_Error: %s\n", SDL_GetError());
@@ -139,10 +142,13 @@ main(int argc, char **argv)
 		goto exit;
 	}
 
+	format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+
 	SDL_FlushEvents(0, SDL_LASTEVENT);
 	SDL_StartTextInput();
 	while (running) {
-		ui_draw_pic(wscreen, pscreen, SCREEN_WIDTH, SCREEN_HEIGHT, &picsurface, font);
+		screen_redraw(pscreen, &picsurface, font, format, &tmp_chr1, &tmp_chr2);
+		ui_draw_pic(wscreen, SCREEN_WIDTH, SCREEN_HEIGHT, picsurface);
 		SDL_UpdateWindowSurface(window);
 redo:
 		if (SDL_WaitEvent(&event)) {
@@ -187,6 +193,9 @@ exit:
 	if (font != NULL) SDL_FreeSurface(font);
 	if (picsurface != NULL) SDL_FreeSurface(picsurface);
 	if (window != NULL) SDL_DestroyWindow(window);
+	if (format) SDL_FreeFormat(format);
+	if (tmp_chr1) SDL_FreeSurface(tmp_chr1);
+	if (tmp_chr2) SDL_FreeSurface(tmp_chr2);
 	SDL_Quit();
 	if (L) lua_close(L);
 	return err;

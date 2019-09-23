@@ -1,10 +1,9 @@
 #include <SDL.h>
 
 #include "ui.h"
-#include "screen.h"
 
 char
-ui_draw_pic(SDL_Surface *s, screen_t *pic, int w, int h, SDL_Surface **picsurface, SDL_Surface *font)
+ui_draw_pic(SDL_Surface *s, int w, int h, SDL_Surface *pic)
 {
 	SDL_Rect src_rect;
 	SDL_Rect dst_rect;
@@ -19,11 +18,5 @@ ui_draw_pic(SDL_Surface *s, screen_t *pic, int w, int h, SDL_Surface **picsurfac
 	dst_rect.w = w;
 	dst_rect.h = h;
 
-	return SDL_BlitScaled(screen_redraw(pic, picsurface, font), &src_rect, s, &dst_rect);
-}
-
-char
-ui_draw_palette(SDL_Surface *s)
-{
-	return 0;
+	return SDL_BlitScaled(pic, &src_rect, s, &dst_rect);
 }

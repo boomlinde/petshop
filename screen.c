@@ -22,16 +22,19 @@ static const SDL_Color colors[] = {
 };
 
 
-SDL_Surface *
-screen_redraw(screen_t *screen, SDL_Surface **surface, SDL_Surface *font)
+void
+screen_redraw(
+		screen_t *screen,
+		SDL_Surface **surface,
+		SDL_Surface *font,
+		SDL_PixelFormat *format,
+		SDL_Surface **tmp_chr1,
+		SDL_Surface **tmp_chr2)
 {
 	SDL_Rect tmp_rect;
 	SDL_Color const *tmp_rgb;
-	SDL_Surface *tmp_chr;
-	SDL_Surface *tmp_chr2;
 	int i;
 	int x, y, marked, mask;
-	SDL_PixelFormat *format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
 
 	// init surface
 	if (*surface == NULL) {
@@ -41,6 +44,26 @@ screen_redraw(screen_t *screen, SDL_Surface **surface, SDL_Surface *font)
 				format->Gmask,
 				format->Bmask,
 				format->Amask);
+	}
+
+	// temporary surface for char coloring
+	if (*tmp_chr1 == NULL) {
+		*tmp_chr1 = SDL_CreateRGBSurface(
+				0, 8, 8, format->BitsPerPixel,
+				format->Rmask,
+				format->Gmask,
+				format->Bmask,
+				format->Amask);
+	}
+
+	if (*tmp_chr2 == NULL) {
+		*tmp_chr2 = SDL_CreateRGBSurface(
+				0, 8, 8, format->BitsPerPixel,
+				format->Rmask,
+				format->Gmask,
+				format->Bmask,
+				format->Amask);
+		SDL_SetSurfaceBlendMode(*tmp_chr2, SDL_BLENDMODE_MOD);
 	}
 
 	// draw border
@@ -65,23 +88,6 @@ screen_redraw(screen_t *screen, SDL_Surface **surface, SDL_Surface *font)
 					tmp_rgb->r,
 					tmp_rgb->g,
 					tmp_rgb->b));
-
-	// temporary surface for char coloring
-	tmp_chr = SDL_CreateRGBSurface(
-			0, 8, 8, format->BitsPerPixel,
-			format->Rmask,
-			format->Gmask,
-			format->Bmask,
-			format->Amask);
-
-	tmp_chr2 = SDL_CreateRGBSurface(
-			0, 8, 8, format->BitsPerPixel,
-			format->Rmask,
-			format->Gmask,
-			format->Bmask,
-			format->Amask);
-
-	SDL_SetSurfaceBlendMode(tmp_chr2, SDL_BLENDMODE_MOD);
 
 	// draw chars
 	for (i = 0; i < 1000; i++) {
@@ -109,24 +115,19 @@ screen_redraw(screen_t *screen, SDL_Surface **surface, SDL_Surface *font)
 
 		if (marked) mask = 0xff; else mask = 0x00;
 		tmp_rgb = &colors[screen->colors[i] & 15];
-		SDL_FillRect(tmp_chr2,
+		SDL_FillRect(*tmp_chr2,
 				NULL,
-				SDL_MapRGBA(tmp_chr->format,
+				SDL_MapRGBA(format,
 						tmp_rgb->r ^ mask,
 						tmp_rgb->g ^ mask,
 						tmp_rgb->b ^ mask, 0));
 
 		if (screen->lowercase)
-			SDL_BlitSurface(font, char_rect(screen->chars[i] + 256), tmp_chr, NULL);
+			SDL_BlitSurface(font, char_rect(screen->chars[i] + 256), *tmp_chr1, NULL);
 		else
-			SDL_BlitSurface(font, char_rect(screen->chars[i]), tmp_chr, NULL);
-		SDL_BlitSurface(tmp_chr2, NULL, tmp_chr, NULL);
-		SDL_BlitSurface(tmp_chr, NULL, *surface, &tmp_rect);
+			SDL_BlitSurface(font, char_rect(screen->chars[i]), *tmp_chr1, NULL);
+
+		SDL_BlitSurface(*tmp_chr2, NULL, *tmp_chr1, NULL);
+		SDL_BlitSurface(*tmp_chr1, NULL, *surface, &tmp_rect);
 	}
-
-	SDL_FreeSurface(tmp_chr);
-	SDL_FreeSurface(tmp_chr2);
-	SDL_FreeFormat(format);
-
-	return *surface;
 }
