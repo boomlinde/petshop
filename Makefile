@@ -5,7 +5,7 @@ SRC      = $(wildcard *.c)
 HEADERS  = $(wildcard *.h)
 OBJS     = $(sort $(patsubst %,%.o,$(BIN)) $(patsubst %.c,%.o,$(SRC)))
 DEPS     = $(patsubst %.c,%.d,$(SRC))
-CFLAGS  += -MMD -MP -Wall -O3
+CFLAGS  += -flto -MMD -MP -Wall -O3
 CFLAGS  += $(shell pkg-config --cflags $(PKG))
 LDFLAGS += $(shell pkg-config --libs $(PKG))
 
