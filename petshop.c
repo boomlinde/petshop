@@ -205,9 +205,9 @@ static int
 l_setscreen(lua_State *L)
 {
 	int x, y, c;
-	x = (int)luaL_checknumber(L, 1);
-	y = (int)luaL_checknumber(L, 2);
-	c = (int)(luaL_checknumber(L, 3));
+	x = (int)lua_tonumber(L, 1);
+	y = (int)lua_tonumber(L, 2);
+	c = (int)lua_tonumber(L, 3);
 	pscreen->chars[x + y * 40] = (uint8_t)c;
 	return 0;
 }
@@ -216,9 +216,9 @@ static int
 l_setcolor(lua_State *L)
 {
 	int x, y, c;
-	x = (int)luaL_checknumber(L, 1);
-	y = (int)luaL_checknumber(L, 2);
-	c = (int)(luaL_checknumber(L, 3));
+	x = (int)lua_tonumber(L, 1);
+	y = (int)lua_tonumber(L, 2);
+	c = (int)lua_tonumber(L, 3);
 	pscreen->colors[x + y * 40] = (uint8_t)c;
 	return 0;
 }
@@ -227,7 +227,7 @@ static int
 l_setborder(lua_State *L)
 {
 	int c;
-	c = 0xf & (int)(luaL_checknumber(L, 1));
+	c = 0xf & (int)lua_tonumber(L, 1);
 	pscreen->border = c;
 	return 0;
 }
@@ -236,7 +236,7 @@ static int
 l_setbg(lua_State *L)
 {
 	int c;
-	c = 0xf & (int)(luaL_checknumber(L, 1));
+	c = 0xf & (int)lua_tonumber(L, 1);
 	pscreen->background = c;
 	return 0;
 }
@@ -269,10 +269,10 @@ static int
 l_setmarker(lua_State *L)
 {
 	int x, y, w, h, x2, y2;
-	x = (int)luaL_checknumber(L, 1);
-	y = (int)luaL_checknumber(L, 2);
-	w = (int)luaL_checknumber(L, 3);
-	h = (int)luaL_checknumber(L, 4);
+	x = (int)lua_tonumber(L, 1);
+	y = (int)lua_tonumber(L, 2);
+	w = (int)lua_tonumber(L, 3);
+	h = (int)lua_tonumber(L, 4);
 
 	x2 = x + w;
 	y2 = y + h;
