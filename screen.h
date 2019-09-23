@@ -18,6 +18,12 @@ typedef struct {
 	int lowercase;
 } screen_t;
 
-SDL_Surface *screen_redraw(screen_t *screen, SDL_Surface **surface, SDL_Surface *font);
+void screen_redraw(
+	screen_t *screen,
+	SDL_Surface **surface,
+	SDL_Surface *font,
+	SDL_PixelFormat *format,
+	SDL_Surface **tmp_chr1,
+	SDL_Surface **tmp_chr2);
 
 #endif

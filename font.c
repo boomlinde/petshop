@@ -1,5 +1,5 @@
 #include "font.h"
-#include "chargen.h"
+#include "chargendata.h"
 
 SDL_Rect *
 char_rect(int c)
@@ -13,6 +13,15 @@ char_rect(int c)
 	r.y = (c >> 4) * 8;
 
 	return &r;
+}
+
+static char
+chargen_get(int x, int y)
+{
+	int index;
+
+	index = (x & ~7) + (y & 7) + (y & ~7) * 16;
+	return 0 != (chargen_bin[index] & (1 << (~x & 7)));
 }
 
 static void

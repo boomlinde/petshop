@@ -10,7 +10,6 @@
 
 #include "font.h"
 #include "screen.h"
-#include "ui.h"
 #include "luacode.h"
 
 #define SCREEN_WIDTH (368 * scale)
@@ -31,11 +30,7 @@ static void handle_event(lua_State *L);
 int running = 1;
 int err = 0;
 int scale = 3;
-SDL_Window *window = NULL;
-SDL_Surface *wscreen = NULL;
 screen_t *pscreen = NULL;
-SDL_Surface *picsurface = NULL;
-SDL_Surface *font = NULL;
 
 int
 main(int argc, char **argv)
@@ -46,6 +41,10 @@ main(int argc, char **argv)
 	SDL_PixelFormat *format = NULL;
 	SDL_Surface *tmp_chr1 = NULL;
 	SDL_Surface *tmp_chr2 = NULL;
+	SDL_Window *window = NULL;
+	SDL_Surface *picsurface = NULL;
+	SDL_Surface *wscreen = NULL;
+	SDL_Surface *font = NULL;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "SDL_Error: %s\n", SDL_GetError());
@@ -53,7 +52,7 @@ main(int argc, char **argv)
 		goto exit;
 	}
 
-	window = SDL_CreateWindow("PETSCII",
+	window = SDL_CreateWindow("petshop",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			SCREEN_WIDTH,
@@ -148,9 +147,9 @@ main(int argc, char **argv)
 	SDL_StartTextInput();
 	while (running) {
 		screen_redraw(pscreen, &picsurface, font, format, &tmp_chr1, &tmp_chr2);
-		ui_draw_pic(wscreen, SCREEN_WIDTH, SCREEN_HEIGHT, picsurface);
+		SDL_BlitScaled(picsurface, NULL, wscreen, NULL);
 		SDL_UpdateWindowSurface(window);
-redo:
+skipredraw:
 		if (SDL_WaitEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
@@ -181,7 +180,7 @@ redo:
 			case SDL_WINDOWEVENT:
 				break;
 			default:
-				goto redo;
+				goto skipredraw;
 			}
 		}
 
