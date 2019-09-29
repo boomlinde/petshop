@@ -2,16 +2,16 @@ BIN = petshop
 PKG = sdl2 luajit
 
 SRC      = $(wildcard *.c)
-HEADERS  = $(wildcard *.h)
 OBJS     = $(sort $(patsubst %,%.o,$(BIN)) $(patsubst %.c,%.o,$(SRC)))
-DEPS     = $(patsubst %.c,%.d,$(SRC))
-CFLAGS  += -flto -MMD -MP -Wall -O3
+CFLAGS  += -flto -Wall -O3
 CFLAGS  += $(shell pkg-config --cflags $(PKG))
 LDFLAGS += $(shell pkg-config --libs $(PKG))
 
-all: chargendata.h luacode.h $(BIN)
-
 $(BIN): $(OBJS)
+
+petshop.o: petshop.c font.h screen.h luacode.h
+font.o: font.c font.h chargendata.h
+screen.o: screen.c screen.h
 
 chargendata.h: chargen.bin
 	xxd -i chargen.bin > chargendata.h
@@ -23,7 +23,4 @@ luacode.h: petshop.lua
 	-rm -f code.lua
 
 clean:
-	-rm -f $(OBJS) $(DEPS) $(BIN) tags chargendata.h luacode.h
-
--include $(DEPS)
-# DO NOT DELETE
+	-rm -f $(OBJS) $(DEPS) $(BIN) chargendata.h luacode.h
