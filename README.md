@@ -1,6 +1,8 @@
 Petshop
 =======
 
+![Screenshot](.github/screenshot.png)
+
 Petshop is a PETSCII editor targetting the Commodore 64. It implements
 few but powerful editing features to enable quick editing using the
 keyboard.
