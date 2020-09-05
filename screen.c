@@ -71,9 +71,9 @@ screen_redraw(
 	SDL_FillRect(*surface,
 			NULL,
 			SDL_MapRGB(format,
-					tmp_rgb->r,
-					tmp_rgb->g,
-					tmp_rgb->b));
+					tmp_rgb->r ^ screen->bordermod,
+					tmp_rgb->g ^ screen->bordermod,
+					tmp_rgb->b ^ screen->bordermod));
 
 	// draw background
 	tmp_rect.x = 3*8;

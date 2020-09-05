@@ -24,6 +24,7 @@ static int l_cls(lua_State *L);
 static int l_quit(lua_State *L);
 static int l_setmarker(lua_State *L);
 static int l_lowercase(lua_State *L);
+static int l_setbordermod(lua_State *L);
 
 static void handle_event(lua_State *L);
 
@@ -72,6 +73,7 @@ main(int argc, char **argv)
 
 	pscreen->background = 6;
 	pscreen->border = 14;
+	pscreen->bordermod = 0;
 	for (i = 0; i < 40 * 25; i++) {
 		pscreen->chars[i] = 0x20;
 		pscreen->colors[i] = 0xe;
@@ -95,6 +97,7 @@ main(int argc, char **argv)
 	lua_pushstring(L, "quit"); lua_pushcfunction(L, l_quit); lua_settable(L, -3);
 	lua_pushstring(L, "setmarker"); lua_pushcfunction(L, l_setmarker); lua_settable(L, -3);
 	lua_pushstring(L, "setlowercase"); lua_pushcfunction(L, l_lowercase); lua_settable(L, -3);
+	lua_pushstring(L, "setbordermod"); lua_pushcfunction(L, l_setbordermod); lua_settable(L, -3);
 
 	lua_setglobal(L, "ht");
 
@@ -290,6 +293,13 @@ l_setmarker(lua_State *L)
 	pscreen->marker_w = w;
 	pscreen->marker_h = h;
 
+	return 0;
+}
+
+static int
+l_setbordermod(lua_State *L)
+{
+	pscreen->bordermod = (int)lua_tonumber(L, 1);
 	return 0;
 }
 

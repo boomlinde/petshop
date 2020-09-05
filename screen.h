@@ -16,6 +16,7 @@ typedef struct {
 	int marker_w;
 	int marker_h;
 	int lowercase;
+	uint8_t bordermod;
 } screen_t;
 
 void screen_redraw(

@@ -78,8 +78,13 @@ Commands
                         upper left corner of selection
     B                 - Set border color to foreground color of
                         upper left corner of selection
-    i<character>      - Fill selection with character and move
-                        selection right one step
+    i                 - Start insert mode. In insert mode, characters
+	                    may be inserted by typing them. The cursor can
+						still be moved by using the arrow keys. Return
+						will break the line and place the cursor on the
+						next line and in the column in which insert mode
+						was entered. You can leave insert mode by pressing
+						Escape
     t                 - Fit selection to yanked
     C                 - Toggle between lower/upper case
     F1                - Save project

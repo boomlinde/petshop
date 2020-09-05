@@ -307,7 +307,7 @@ editor = {
 		{ ev.TEXT, 'I', function () editor:invert() end },
 		{ ev.KEYDOWN, 'X', function () editor:flip() end },
 		{ ev.KEYDOWN, 'B', function () editor:setbgborder() end },
-		{ ev.TEXT, 'i', function () if not editor.palette then editor.insert = true end end },
+		{ ev.TEXT, 'i', function () editor:startinsert() end },
 		{ ev.KEYDOWN, 'F1', function () editor:initsave() end },
 		{ ev.KEYDOWN, 'F2', function () editor:initload() end },
 		{ ev.TEXT, 'C', function () setcase(not lowercase); end },
@@ -318,6 +318,7 @@ editor = {
 		local pics = {unpack(tip(picture))}
 		if self.palette then table.insert(pics, palettepic) end
 		if self.prompting then table.insert(pics, promptpic) end
+		if self.insert then table.insert(pics, self.editframe) end
 		redrawprompt()
 		drawpictures(pics)
 	end,
@@ -425,19 +426,43 @@ editor = {
 			ht.setmarker(mx, my, 1, 1)
 			self:draw()
 		elseif self.insert then
-			if event.t == ev.TEXT then
-				local char = ascii2scr(event.key)[1]
-				local frame = newframe()
+			if event.t == ev.KEYDOWN and event.key == 'Backspace' then
+				self:cursor_left()
+				local char = ascii2scr(' ')[1]
 				for y = self.my,self.my+self.mh-1 do
 					for x = self.mx,self.mx+self.mw-1 do
-						frame.chars[x + 40 * y] = char
-						frame.colors[x + 40 * y] = self.brush.colors[0]
+						self.editframe.chars[x + 40 * y] = char
+						self.editframe.colors[x + 40 * y] = self.brush.colors[0]
 					end
 				end
-				addframe(picture, frame)
+				self:draw()
+			elseif event.t == ev.KEYDOWN and event.key == 'Up' then
+				self:cursor_up()
+			elseif event.t == ev.KEYDOWN and event.key == 'Down' then
+				self:cursor_down()
+			elseif event.t == ev.KEYDOWN and event.key == 'Left' then
+				self:cursor_left()
+			elseif event.t == ev.KEYDOWN and event.key == 'Right' then
+				self:cursor_right()
+			elseif event.t == ev.KEYDOWN and event.key == 'Return' then
+				self:cursor_down()
+				self.mx = self.startcolumn
+			elseif event.t == ev.KEYDOWN and event.key == 'Escape' then
+				addframe(picture, self.editframe)
+				self.insert = false
+				self.editframe = nil
+				ht.setbordermod(0)
+				self:draw()
+			elseif event.t == ev.TEXT then
+				local char = ascii2scr(event.key)[1]
+				for y = self.my,self.my+self.mh-1 do
+					for x = self.mx,self.mx+self.mw-1 do
+						self.editframe.chars[x + 40 * y] = char
+						self.editframe.colors[x + 40 * y] = self.brush.colors[0]
+					end
+				end
 				self:draw()
 				self:cursor_right()
-				self.insert = false
 			end
 		else
 			for i = 1,#self.bindings do
@@ -543,6 +568,15 @@ editor = {
 		end
 		addframe(picture, frame)
 		self:draw()
+	end,
+
+	startinsert = function (self)
+		if not self.palette then
+			self.insert = true
+			self.editframe = newframe()
+			self.startcolumn = self.mx
+			ht.setbordermod(0x55)
+		end
 	end,
 
 	cursor_up = function (self)
