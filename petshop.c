@@ -35,7 +35,8 @@ main(int argc, char **argv)
 {
 	SDL_Event event;
 	lua_State *L = NULL;
-	int i, status, xo, yo, lastxo, lastyo;
+	int i, status, xo, yo, lastxo, lastyo, skip;
+
 	lastxo = 0;
 	lastyo = 0;
 	xo = 0;
@@ -117,6 +118,7 @@ main(int argc, char **argv)
 	SDL_FlushEvents(0, SDL_LASTEVENT);
 	SDL_StartTextInput();
 	while (running) {
+		skip = 1;
 		petscii_flush(&pscreen);
 skipredraw:
 		if (SDL_WaitEvent(&event)) {
@@ -148,6 +150,7 @@ skipredraw:
 				handle_event(L);
 				break;
 			case SDL_WINDOWEVENT:
+				skip = 0;
 			case SDL_MOUSEMOTION:
 				SDL_GetMouseState(&xo, &yo);
 				pixels_virtpos(pscreen.s, xo, yo, &xo, &yo);
@@ -164,6 +167,8 @@ skipredraw:
 						lastxo = xo;
 						lastyo = yo;
 					}
+				} else if (skip) {
+					goto skipredraw;
 				}
 				break;
 			case SDL_MOUSEBUTTONDOWN:
