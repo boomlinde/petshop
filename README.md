@@ -24,8 +24,8 @@ repeated to fill the selection.
 Another major concept is the palette. The palette can be brought up with
 the return key. The palette shows all available characters and colors.
 You can selection commands while the palette is enabled, but commands
-that affect the picture don't have an effect. When the palette is closed
-with the return key again, the selection is automatically yanked.
+that normaly affect the picture don't have an effect. When the palette is
+closed with the return key again, the selection is automatically yanked.
 
 Finally, there are two pictures. One main picture and a scratch pad. The
 scratchpad is never visible, but can be swapped with the main picture by
@@ -92,6 +92,13 @@ Commands
     C                 - Toggle between lower/upper case
     F1                - Save project
     F2                - Load project
+
+Mouse control
+-------------
+
+The selection may be controlled using the mouse. Clicking the mouse is
+equivalent to pressing Return. Holding shift, the selection size can be
+changed by moving the mouse.
 
 Generate an executable
 ----------------------
