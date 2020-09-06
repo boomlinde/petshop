@@ -465,7 +465,6 @@ editor = {
 				self:cursor_right()
 			end
 		elseif event.t == ev.MOUSEMOTION then
-			print("hello " .. tostring(event.x) .. "," .. tostring(event.y))
 			if not shift then
 				self.mx = event.x
 				if self.mx + self.mw > 39 then
