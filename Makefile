@@ -9,9 +9,7 @@ LDFLAGS += $(shell pkg-config --libs $(PKG))
 
 $(BIN): $(OBJS)
 
-petshop.o: petshop.c font.h screen.h luacode.h
-font.o: font.c font.h chargendata.h
-screen.o: screen.c screen.h
+petshop.o: petshop.c luacode.h chargendata.h petscii.h pixels.h
 
 chargendata.h: chargen.bin
 	xxd -i chargen.bin > chargendata.h

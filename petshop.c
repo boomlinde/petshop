@@ -8,12 +8,9 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "font.h"
-#include "screen.h"
 #include "luacode.h"
-
-#define SCREEN_WIDTH (368 * scale)
-#define SCREEN_HEIGHT (256 * scale)
+#include "chargendata.h"
+#include "petscii.h"
 
 // API functions
 static int l_setscreen(lua_State *L);
@@ -31,7 +28,7 @@ static void handle_event(lua_State *L);
 int running = 1;
 int err = 0;
 int scale = 3;
-screen_t *pscreen = NULL;
+struct petscii pscreen;
 
 int
 main(int argc, char **argv)
@@ -39,50 +36,18 @@ main(int argc, char **argv)
 	SDL_Event event;
 	lua_State *L = NULL;
 	int i, status;
-	SDL_PixelFormat *format = NULL;
-	SDL_Surface *tmp_chr1 = NULL;
-	SDL_Surface *tmp_chr2 = NULL;
-	SDL_Window *window = NULL;
-	SDL_Surface *picsurface = NULL;
-	SDL_Surface *wscreen = NULL;
-	SDL_Surface *font = NULL;
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "SDL_Error: %s\n", SDL_GetError());
-		err = 1;
-		goto exit;
-	}
+	petscii_init(&pscreen, chargen_bin);
 
-	window = SDL_CreateWindow("petshop",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			SCREEN_WIDTH,
-			SCREEN_HEIGHT,
-			SDL_WINDOW_SHOWN);
-	if (window == NULL) {
-		err = 1;
-		goto exit;
-	}
-	
-	wscreen = SDL_GetWindowSurface(window);
-	if (font_init(wscreen->format, &font)) {
-		err = 1;
-		goto exit;
-	}
-	pscreen = malloc(sizeof(screen_t));
-
-	pscreen->background = 6;
-	pscreen->border = 14;
-	pscreen->bordermod = 0;
+	pscreen.bg = 6;
+	pscreen.border = 14;
+	pscreen.bordermod = 0;
 	for (i = 0; i < 40 * 25; i++) {
-		pscreen->chars[i] = 0x20;
-		pscreen->colors[i] = 0xe;
+		pscreen.chars[i] = 0x20;
+		pscreen.colors[i] = 0xe;
 	}
-	pscreen->marker_x = 0;
-	pscreen->marker_y = 0;
-	pscreen->marker_w = 1;
-	pscreen->marker_h = 1;
-	pscreen->lowercase = 0;
+	pscreen.mw = 1;
+	pscreen.mh = 1;
 
 	L = luaL_newstate();
 	luaL_openlibs(L);
@@ -144,14 +109,10 @@ main(int argc, char **argv)
 		goto exit;
 	}
 
-	format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
-
 	SDL_FlushEvents(0, SDL_LASTEVENT);
 	SDL_StartTextInput();
 	while (running) {
-		screen_redraw(pscreen, &picsurface, font, format, &tmp_chr1, &tmp_chr2);
-		SDL_BlitScaled(picsurface, NULL, wscreen, NULL);
-		SDL_UpdateWindowSurface(window);
+		petscii_flush(&pscreen);
 skipredraw:
 		if (SDL_WaitEvent(&event)) {
 			switch (event.type) {
@@ -191,13 +152,7 @@ skipredraw:
 	SDL_StopTextInput();
 
 exit:
-	if (pscreen) free(pscreen);
-	if (font != NULL) SDL_FreeSurface(font);
-	if (picsurface != NULL) SDL_FreeSurface(picsurface);
-	if (window != NULL) SDL_DestroyWindow(window);
-	if (format) SDL_FreeFormat(format);
-	if (tmp_chr1) SDL_FreeSurface(tmp_chr1);
-	if (tmp_chr2) SDL_FreeSurface(tmp_chr2);
+	petscii_destroy(&pscreen);
 	SDL_Quit();
 	if (L) lua_close(L);
 	return err;
@@ -211,7 +166,7 @@ l_setscreen(lua_State *L)
 	x = (int)lua_tonumber(L, 1);
 	y = (int)lua_tonumber(L, 2);
 	c = (int)lua_tonumber(L, 3);
-	pscreen->chars[x + y * 40] = (uint8_t)c;
+	pscreen.chars[x + y * 40] = (uint8_t)c;
 	return 0;
 }
 
@@ -222,7 +177,7 @@ l_setcolor(lua_State *L)
 	x = (int)lua_tonumber(L, 1);
 	y = (int)lua_tonumber(L, 2);
 	c = (int)lua_tonumber(L, 3);
-	pscreen->colors[x + y * 40] = (uint8_t)c;
+	pscreen.colors[x + y * 40] = (uint8_t)c;
 	return 0;
 }
 
@@ -231,7 +186,7 @@ l_setborder(lua_State *L)
 {
 	int c;
 	c = 0xf & (int)lua_tonumber(L, 1);
-	pscreen->border = c;
+	pscreen.border = c;
 	return 0;
 }
 
@@ -240,22 +195,22 @@ l_setbg(lua_State *L)
 {
 	int c;
 	c = 0xf & (int)lua_tonumber(L, 1);
-	pscreen->background = c;
+	pscreen.bg = c;
 	return 0;
 }
 
 static int
 l_cls(lua_State *L)
 {
-	memset(pscreen->chars, 0x20, 1000);
-	memset(pscreen->colors, 0xe, 1000);
+	memset(pscreen.chars, 0x20, 1000);
+	memset(pscreen.colors, 0xe, 1000);
 	return 0;
 }
 
 static int
 l_lowercase(lua_State *L)
 {
-	pscreen->lowercase = (int)lua_toboolean(L, 1);
+	pscreen.lowercase = (int)lua_toboolean(L, 1);
 	return 0;
 }
 
@@ -288,10 +243,10 @@ l_setmarker(lua_State *L)
 	if (y > 25) y = 25;
 	if (y < 0) y = 0;
 
-	pscreen->marker_x = x;
-	pscreen->marker_y = y;
-	pscreen->marker_w = w;
-	pscreen->marker_h = h;
+	pscreen.mx = x;
+	pscreen.my = y;
+	pscreen.mw = w;
+	pscreen.mh = h;
 
 	return 0;
 }
@@ -299,7 +254,7 @@ l_setmarker(lua_State *L)
 static int
 l_setbordermod(lua_State *L)
 {
-	pscreen->bordermod = (int)lua_tonumber(L, 1);
+	pscreen.bordermod = (int)lua_tonumber(L, 1);
 	return 0;
 }
 
