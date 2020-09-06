@@ -61,10 +61,12 @@ Commands
                         (ctrl: roll selection)
     Backspace         - Reset selection size to 1x1
     y, Space          - Yank selection
-    Return            - Open/close palette
-	p                 - While the palette is open, position and shape
-	                    the cursor according to the last palette
-						selection
+    Return            - Open/close palette, copying the selection upon
+                        exit
+    Escape            - Leave palette (without copying selection)
+    p                 - While the palette is open, position and shape
+                        the cursor according to the last palette
+                        selection
     Tab               - Swap between main picture and scratchpad
     u                 - Undo last command
     U                 - Redo last command
@@ -82,12 +84,12 @@ Commands
     B                 - Set border color to foreground color of
                         upper left corner of selection
     i                 - Start insert mode. In insert mode, characters
-	                    may be inserted by typing them. The cursor can
-						still be moved by using the arrow keys. Return
-						will break the line and place the cursor on the
-						next line and in the column in which insert mode
-						was entered. You can leave insert mode by pressing
-						Escape
+                        may be inserted by typing them. The cursor can
+                        still be moved by using the arrow keys. Return
+                        will break the line and place the cursor on the
+                        next line and in the column in which insert mode
+                        was entered. You can leave insert mode by pressing
+                        Escape
     t                 - Fit selection to yanked
     C                 - Toggle between lower/upper case
     F1                - Save project
@@ -96,9 +98,9 @@ Commands
 Mouse control
 -------------
 
-The selection may be controlled using the mouse. Clicking the mouse is
-equivalent to pressing Return. Holding shift, the selection size can be
-changed by moving the mouse.
+The selection may be controlled using the mouse. Holding shift, the selection
+size can be changed by moving the mouse. The left, right and middle buttons
+emulate keyboard presses; Return, y and Backspace respectively.
 
 Generate an executable
 ----------------------

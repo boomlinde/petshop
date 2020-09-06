@@ -295,6 +295,7 @@ editor = {
 		{ ev.KEYDOWN, 'Y', function () editor:copy() end },
 		{ ev.KEYDOWN, 'Space', function () editor:copy() end },
 		{ ev.KEYDOWN, 'Return', function () editor:togglepalette() end },
+		{ ev.KEYDOWN, 'Escape', function () editor:exitpalette() end },
 		{ ev.KEYDOWN, 'Tab', function () editor:togglescratch() end },
 		{ ev.TEXT, 'p', function () editor:palettepos() end },
 		{ ev.TEXT, 'u', function () undo(picture); editor:draw() end },
@@ -508,6 +509,17 @@ editor = {
 			recolorpalette(self.brush.colors[0])
 		end
 		self.palette = not self.palette
+		self:draw()
+	end,
+
+	exitpalette = function (self)
+		if self.palette then
+			self.tmp_x = self.mx
+			self.tmp_w = self.mw
+			self.tmp_y = self.my
+			self.tmp_h = self.mh
+		end
+		self.palette = false
 		self:draw()
 	end,
 
