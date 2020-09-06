@@ -22,6 +22,8 @@ static int l_quit(lua_State *L);
 static int l_setmarker(lua_State *L);
 static int l_lowercase(lua_State *L);
 static int l_setbordermod(lua_State *L);
+static int l_getmouse(lua_State *L);
+static int l_setmouse(lua_State *L);
 
 static void handle_event(lua_State *L);
 
@@ -35,7 +37,8 @@ main(int argc, char **argv)
 {
 	SDL_Event event;
 	lua_State *L = NULL;
-	int i, status, xo, yo, lastxo, lastyo, skip;
+	int i, status, xo, yo, lastxo, lastyo, skip, xm, ym;
+	char *emulated;
 
 	lastxo = 0;
 	lastyo = 0;
@@ -58,7 +61,7 @@ main(int argc, char **argv)
 	luaL_openlibs(L);
 
 	// API functions
-	lua_createtable(L, 0, 8);
+	lua_createtable(L, 0, 10);
 	lua_pushstring(L, "setscreen"); lua_pushcfunction(L, l_setscreen); lua_settable(L, -3);
 	lua_pushstring(L, "setcolor"); lua_pushcfunction(L, l_setcolor); lua_settable(L, -3); 
 	lua_pushstring(L, "setborder"); lua_pushcfunction(L, l_setborder); lua_settable(L, -3); 
@@ -68,6 +71,8 @@ main(int argc, char **argv)
 	lua_pushstring(L, "setmarker"); lua_pushcfunction(L, l_setmarker); lua_settable(L, -3);
 	lua_pushstring(L, "setlowercase"); lua_pushcfunction(L, l_lowercase); lua_settable(L, -3);
 	lua_pushstring(L, "setbordermod"); lua_pushcfunction(L, l_setbordermod); lua_settable(L, -3);
+	lua_pushstring(L, "getmouse"); lua_pushcfunction(L, l_getmouse); lua_settable(L, -3);
+	lua_pushstring(L, "setmouse"); lua_pushcfunction(L, l_setmouse); lua_settable(L, -3);
 
 	lua_setglobal(L, "ht");
 
@@ -152,34 +157,47 @@ skipredraw:
 			case SDL_WINDOWEVENT:
 				skip = 0;
 			case SDL_MOUSEMOTION:
-				SDL_GetMouseState(&xo, &yo);
-				pixels_virtpos(pscreen.s, xo, yo, &xo, &yo);
-				if (xo >= 3*8 && xo < (40 + 3)*8 && yo >= 3*8 && yo < (25 + 3)*8) {
-					xo = xo / 8 - 3;
-					yo = yo / 8 - 3;
-					if (lastxo != xo || lastyo != yo) {
-						lua_getglobal(L, "handle");
-						lua_createtable(L, 0, 3);
-						lua_pushstring(L, "t"); lua_pushnumber(L, event.type); lua_settable(L, -3);
-						lua_pushstring(L, "x"); lua_pushnumber(L, xo); lua_settable(L, -3);
-						lua_pushstring(L, "y"); lua_pushnumber(L, yo); lua_settable(L, -3);
-						handle_event(L);
-						lastxo = xo;
-						lastyo = yo;
-					}
+				SDL_GetMouseState(&xm, &ym);
+				pixels_virtpos(pscreen.s, &xm, &ym);
+				xo = xm / 8 - 3;
+				yo = ym / 8 - 3;
+				if (xo < 0) xo = 0;
+				if (xo > 39) xo = 39;
+				if (yo < 0) yo = 0;
+				if (yo > 24) yo = 24;
+				if (lastxo != xo || lastyo != yo) {
+					lastxo = xo;
+					lastyo = yo;
+					lua_getglobal(L, "handle");
+					lua_createtable(L, 0, 3);
+					lua_pushstring(L, "t"); lua_pushnumber(L, event.type); lua_settable(L, -3);
+					lua_pushstring(L, "x"); lua_pushnumber(L, xo); lua_settable(L, -3);
+					lua_pushstring(L, "y"); lua_pushnumber(L, yo); lua_settable(L, -3);
+					handle_event(L);
 				} else if (skip) {
 					goto skipredraw;
 				}
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				/* Handle mouse click like Return on keyboard */
-				if (event.button.button == SDL_BUTTON_LEFT) {
-					lua_getglobal(L, "handle");
-					lua_createtable(L, 0, 2);
-					lua_pushstring(L, "t"); lua_pushnumber(L, SDL_KEYDOWN); lua_settable(L, -3);
-					lua_pushstring(L, "key"); lua_pushstring(L, "Return"); lua_settable(L, -3);
-					handle_event(L);
-				} else goto skipredraw;
+				switch (event.button.button) {
+				case SDL_BUTTON_LEFT:
+					emulated = "Return";
+					break;
+				case SDL_BUTTON_RIGHT:
+					emulated = "Y";
+					break;
+				case SDL_BUTTON_MIDDLE:
+					emulated = "Backspace";
+					break;
+				default:
+					goto skipredraw;
+				}
+				lua_getglobal(L, "handle");
+				lua_createtable(L, 0, 2);
+				lua_pushstring(L, "t"); lua_pushnumber(L, SDL_KEYDOWN); lua_settable(L, -3);
+				lua_pushstring(L, "key"); lua_pushstring(L, emulated); lua_settable(L, -3);
+				handle_event(L);
 				break;
 			default:
 				goto skipredraw;
@@ -293,6 +311,30 @@ static int
 l_setbordermod(lua_State *L)
 {
 	pscreen.bordermod = (int)lua_tonumber(L, 1);
+	return 0;
+}
+
+static int
+l_getmouse(lua_State *L)
+{
+	int x, y;
+
+	SDL_GetMouseState(&x, &y);
+	pixels_virtpos(pscreen.s, &x, &y);
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
+
+	return 2;
+}
+
+static int
+l_setmouse(lua_State *L)
+{
+	int x, y;
+	x = (int)lua_tonumber(L, 1);
+	y = (int)lua_tonumber(L, 2);
+	pixels_realpos(pscreen.s, &x, &y);
+	SDL_WarpMouseInWindow(pscreen.s->window, x, y);
 	return 0;
 }
 

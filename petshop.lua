@@ -3,10 +3,6 @@ if unpack == nil then unpack = table.unpack end
 
 maxundo = 20
 
-lshift = false
-rshift = false
-shift = false
-
 lctrl = false
 rctrl = false
 ctrl = false
@@ -272,13 +268,17 @@ editor = {
 	insert = false,
 	prompting = false,
 	afterprompt = nil,
+	lshift = false,
+	rshift = false,
+	shift = false,
+	oldshift = false,
 
 	bindings = {
 		{ ev.KEYDOWN, 'Q', function () if ctrl then ht.quit() end end },
-		{ ev.KEYDOWN, 'Left Shift', function () lshift = true; shift = lshift or rshift end },
-		{ ev.KEYUP, 'Left Shift', function () lshift = false; shift = lshift or rshift end },
-		{ ev.KEYDOWN, 'Right Shift', function () rshift = true; shift = lshift or rshift end },
-		{ ev.KEYUP, 'Right Shift', function () rshift = false; shift = lshift or rshift end },
+		{ ev.KEYDOWN, 'Left Shift', function () editor.lshift = true; editor:onshift() end },
+		{ ev.KEYUP, 'Left Shift', function () editor.lshift = false; editor:onshift() end },
+		{ ev.KEYDOWN, 'Right Shift', function () editor.rshift = true; editor:onshift() end },
+		{ ev.KEYUP, 'Right Shift', function () editor.rshift = false; editor:onshift() end },
 		{ ev.KEYDOWN, 'Left Ctrl', function () lctrl = true; ctrl = lctrl or rctrl end },
 		{ ev.KEYUP, 'Left Ctrl', function () lctrl = false; ctrl = lctrl or rctrl end },
 		{ ev.KEYDOWN, 'Right Ctrl', function () rctrl = true; ctrl = lctrl or rctrl end },
@@ -314,6 +314,19 @@ editor = {
 		{ ev.TEXT, 'C', function () setcase(not lowercase); end },
 		{ ev.TEXT, 't', function ()  editor:fittobrush() end },
 	},
+
+	onshift = function (self)
+		self.shift = self.rshift or self.lshift
+		if self.oldshift ~= self.shift then
+			self.oldshift = self.shift
+			if self.shift then
+				ht.setmouse(4 + 8 * (3 + self.mx + self.mw - 1), 4 + 8 * (3 + self.my + self.mh - 1))
+			else
+				ht.setmouse(4 + 8 * (3 + self.mx), 4 + 8 * (3 + self.my))
+			end
+
+		end
+	end,
 
 	draw = function (self)
 		local pics = {unpack(tip(picture))}
@@ -354,7 +367,7 @@ editor = {
 			for x = self.mx,self.mx+self.mw-1 do
 				local c = getfrom(pics, x, y)
 				local newx = self.mx + self.mw - (x - self.mx) - 1
-				if shift then
+				if self.shift then
 					frame.chars[x + newy * 40] = flip_vertical[c.char + 1]
 					frame.colors[x + newy * 40] = c.color
 				else
@@ -372,7 +385,7 @@ editor = {
 		local pics = {unpack(tip(picture))}
 		if self.palette then table.insert(pics, palettepic) end
 		local c = getfrom(pics, self.mx, self.my).color
-		if shift then setborder(c) else setbg(c) end
+		if self.shift then setborder(c) else setbg(c) end
 	end,
 
 	invert = function (self)
@@ -499,7 +512,7 @@ editor = {
 	end,
 
 	handlemouse = function (self, x, y)
-		if not shift then
+		if not self.shift then
 			self.mx = x
 			if self.mx + self.mw > 39 then
 				self.mx = 40 - self.mw
@@ -617,7 +630,7 @@ editor = {
 	cursor_up = function (self)
 		if ctrl then
 			self:roll(0, 1)
-		elseif shift then
+		elseif self.shift then
 			if self.mh > 1 then self.mh = self.mh - 1 end
 		else
 			if self.my > 0 then self.my = self.my - 1 end
@@ -627,7 +640,7 @@ editor = {
 	cursor_down = function (self)
 		if ctrl then
 			self:roll(0, -1)
-		elseif shift then
+		elseif self.shift then
 			if self.mh + self.my < 25 then self.mh = self.mh + 1 end
 		else
 			if self.mh + self.my < 25 then self.my = self.my + 1 end
@@ -637,7 +650,7 @@ editor = {
 	cursor_left = function (self)
 		if ctrl then
 			self:roll(1, 0)
-		elseif shift then
+		elseif self.shift then
 			if self.mw > 1 then self.mw = self.mw - 1 end
 		else
 			if self.mx > 0 then self.mx = self.mx - 1 end
@@ -647,7 +660,7 @@ editor = {
 	cursor_right = function (self)
 		if ctrl then
 			self:roll(-1, 0)
-		elseif shift and not self.insert then
+		elseif self.shift and not self.insert then
 			if self.mw + self.mx < 40 then self.mw = self.mw + 1 end
 		else
 			if self.mw + self.mx < 40 then self.mx = self.mx + 1 end

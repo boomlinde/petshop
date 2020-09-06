@@ -30,6 +30,8 @@ int pixels_init(struct pixels **p, const char *title, int width, int height, int
 void pixels_destroy(struct pixels **p);
 void pixels_flush(struct pixels *p);
 void pixels_set(struct pixels *p, int x, int y, uint32_t color);
+void pixels_virtpos(struct pixels *p, int *x, int *y);
+void pixels_realpos(struct pixels *p, int *x, int *y);
 
 #ifdef PIXELS_IMPL
 
@@ -103,7 +105,7 @@ void pixels_flush(struct pixels *p)
 	SDL_RenderPresent(p->renderer);
 }
 
-void pixels_virtpos(struct pixels *p, int x, int y, int *xo, int *yo)
+void pixels_virtpos(struct pixels *p, int *x, int *y)
 {
 	float xratio, yratio, scale, xf, yf;
 	int wout, hout;
@@ -113,14 +115,35 @@ void pixels_virtpos(struct pixels *p, int x, int y, int *xo, int *yo)
 	yratio = (float)hout / (float)(p->height);
 	scale = xratio > yratio ? yratio : xratio;
 
-	xf = x - ((float)wout / 2.f - (float)p->width * scale / 2.f);
-	yf = y - ((float)hout / 2.f - (float)p->height * scale / 2.f);
+	xf = *x - ((float)wout - (float)p->width * scale) / 2.f;
+	yf = *y - ((float)hout - (float)p->height * scale) / 2.f;
 	xf /= scale;
 	yf /= scale;
 
-	*xo = xf;
-	*yo = yf;
+	*x = xf;
+	*y = yf;
+}
 
+void pixels_realpos(struct pixels *p, int *x, int *y)
+{
+	float xratio, yratio, scale;
+	int wout, hout;
+	float xv, yv;
+
+	SDL_GetRendererOutputSize(p->renderer, &wout, &hout);
+	xratio = (float)wout / (float)(p->width);
+	yratio = (float)hout / (float)(p->height);
+	scale = xratio > yratio ? yratio : xratio;
+
+	xv = 0.5 + ((float)wout - (float)p->width * scale) / 2.f;
+	yv = 0.5 + ((float)hout - (float)p->height * scale) / 2.f;
+	printf("offs %f,%f\n", xv, yv);
+
+	xv += ((float)*x + 0.5) * scale;
+	yv += ((float)*y + 0.5) * scale;
+	printf("add %f,%f\n", xv, yv);
+	*x = xv;
+	*y = yv;
 }
 
 void pixels_set(struct pixels *p, int x, int y, uint32_t color)
