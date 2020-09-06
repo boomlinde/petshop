@@ -1,0 +1,5 @@
+*.o
+petshop
+*.pet
+luacode.h
+chargendata.h
