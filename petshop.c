@@ -35,7 +35,11 @@ main(int argc, char **argv)
 {
 	SDL_Event event;
 	lua_State *L = NULL;
-	int i, status;
+	int i, status, xo, yo, lastxo, lastyo;
+	lastxo = 0;
+	lastyo = 0;
+	xo = 0;
+	yo = 0;
 
 	petscii_init(&pscreen, chargen_bin);
 
@@ -86,11 +90,12 @@ main(int argc, char **argv)
 	lua_pushstring(L, "lightgrey"); lua_pushnumber(L, 15); lua_settable(L, -3);
 	lua_setglobal(L, "color");
 
-	lua_createtable(L, 0, 4);
+	lua_createtable(L, 0, 5);
 	lua_pushstring(L, "KEYUP"); lua_pushnumber(L, SDL_KEYUP); lua_settable(L, -3);
 	lua_pushstring(L, "KEYDOWN"); lua_pushnumber(L, SDL_KEYDOWN); lua_settable(L, -3);
 	lua_pushstring(L, "TEXT"); lua_pushnumber(L, SDL_TEXTINPUT); lua_settable(L, -3);
 	lua_pushstring(L, "QUIT"); lua_pushnumber(L, SDL_QUIT); lua_settable(L, -3);
+	lua_pushstring(L, "MOUSEMOTION"); lua_pushnumber(L, SDL_MOUSEMOTION); lua_settable(L, -3);
 	lua_setglobal(L, "ev");
 
 	// Args
@@ -142,6 +147,23 @@ skipredraw:
 				handle_event(L);
 				break;
 			case SDL_WINDOWEVENT:
+			case SDL_MOUSEMOTION:
+				SDL_GetMouseState(&xo, &yo);
+				pixels_virtpos(pscreen.s, xo, yo, &xo, &yo);
+				if (xo >= 3*8 && xo < (40 + 3)*8 && yo >= 3*8 && yo < (25 + 3)*8) {
+					xo = xo / 8 - 3;
+					yo = yo / 8 - 3;
+					if (lastxo != xo || lastyo != yo) {
+						lua_getglobal(L, "handle");
+						lua_createtable(L, 0, 3);
+						lua_pushstring(L, "t"); lua_pushnumber(L, event.type); lua_settable(L, -3);
+						lua_pushstring(L, "x"); lua_pushnumber(L, xo); lua_settable(L, -3);
+						lua_pushstring(L, "y"); lua_pushnumber(L, yo); lua_settable(L, -3);
+						handle_event(L);
+						lastxo = xo;
+						lastyo = yo;
+					}
+				}
 				break;
 			default:
 				goto skipredraw;

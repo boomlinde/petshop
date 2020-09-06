@@ -77,7 +77,6 @@ void pixels_flush(struct pixels *p)
 	int pitch;
 	float xratio, yratio, scale;
 	int wout, hout;
-
 	SDL_Rect dst;
 
 	if (SDL_LockTexture(p->texture, NULL, (void **)&tpixels, &pitch)) return;
@@ -102,6 +101,26 @@ void pixels_flush(struct pixels *p)
 	SDL_RenderClear(p->renderer);
 	SDL_RenderCopy(p->renderer, p->texture, NULL, &dst);
 	SDL_RenderPresent(p->renderer);
+}
+
+void pixels_virtpos(struct pixels *p, int x, int y, int *xo, int *yo)
+{
+	float xratio, yratio, scale, xf, yf;
+	int wout, hout;
+
+	SDL_GetRendererOutputSize(p->renderer, &wout, &hout);
+	xratio = (float)wout / (float)(p->width);
+	yratio = (float)hout / (float)(p->height);
+	scale = xratio > yratio ? yratio : xratio;
+
+	xf = x - ((float)wout / 2.f - (float)p->width * scale / 2.f);
+	yf = y - ((float)hout / 2.f - (float)p->height * scale / 2.f);
+	xf /= scale;
+	yf /= scale;
+
+	*xo = xf;
+	*yo = yf;
+
 }
 
 void pixels_set(struct pixels *p, int x, int y, uint32_t color)

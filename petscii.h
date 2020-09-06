@@ -84,14 +84,13 @@ void petscii_destroy(struct petscii *p)
 	p->cmp = 0;
 }
 
-static void
+static int
 petscii_drawborder(struct petscii *p)
 {
 	int x, y;
 	uint32_t color;
 
-	if (!p) return;
-	if (p->border == p->bordercmp && p->bordermod == p->bordermodcmp) return;
+	if (p->border == p->bordercmp && p->bordermod == p->bordermodcmp) return 0;
 	p->bordercmp = p->border;
 	p->bordermodcmp = p->bordermod;
 
@@ -115,6 +114,8 @@ petscii_drawborder(struct petscii *p)
 			pixels_set(p->s, x + (3 + 40)*8, y, color);
 		}
 	}
+
+	return 1;
 }
 
 static void
@@ -174,9 +175,9 @@ petscii_evalchar(struct petscii *p, int x, int y, int forced)
 static void
 petscii_flush(struct petscii *p)
 {
-	int x, y, forced;
-	petscii_drawborder(p);
+	int x, y, forced, changed;
 
+	changed = petscii_drawborder(p);
 	forced = 0;
 	if (p->lowercase != p->lowercasecmp || p->bg != p->bgcmp) {
 		p->lowercasecmp = p->lowercase;
@@ -187,9 +188,10 @@ petscii_flush(struct petscii *p)
 	for (y = 0; y < 25; y++) {
 		for (x = 0; x < 40; x++) {
 			petscii_evalchar(p, x, y, forced);
+			changed = 1;
 		}
 	}
-	pixels_flush(p->s);
+	if (changed) pixels_flush(p->s);
 }
 
 #endif /* _PETSCII_H_ */

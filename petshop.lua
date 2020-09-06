@@ -464,6 +464,25 @@ editor = {
 				self:draw()
 				self:cursor_right()
 			end
+		elseif event.t == ev.MOUSEMOTION then
+			print("hello " .. tostring(event.x) .. "," .. tostring(event.y))
+			if not shift then
+				self.mx = event.x
+				if self.mx + self.mw > 39 then
+					self.mx = 40 - self.mw
+				end
+				self.my = event.y
+				if self.my + self.mh > 24 then
+					self.my = 25 - self.mh
+				end
+				ht.setmarker(self.mx, self.my, self.mw, self.mh)
+			else
+				self.mw = event.x + 1 - self.mx
+				self.mh = event.y + 1 - self.my
+				if self.mw < 1 then self.mw = 1 end
+				if self.mh < 1 then self.mh = 1 end
+				ht.setmarker(self.mx, self.my, self.mw, self.mh)
+			end
 		else
 			for i = 1,#self.bindings do
 				local t, key, f
