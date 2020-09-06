@@ -137,11 +137,9 @@ void pixels_realpos(struct pixels *p, int *x, int *y)
 
 	xv = 0.5 + ((float)wout - (float)p->width * scale) / 2.f;
 	yv = 0.5 + ((float)hout - (float)p->height * scale) / 2.f;
-	printf("offs %f,%f\n", xv, yv);
-
 	xv += ((float)*x + 0.5) * scale;
 	yv += ((float)*y + 0.5) * scale;
-	printf("add %f,%f\n", xv, yv);
+
 	*x = xv;
 	*y = yv;
 }
