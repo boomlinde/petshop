@@ -91,7 +91,7 @@ petscii_drawborder(struct petscii *p)
 	uint32_t color;
 
 	if (!p) return;
-	if (p->border == p->bordercmp && p->bordermod != p->bordermodcmp) return;
+	if (p->border == p->bordercmp && p->bordermod == p->bordermodcmp) return;
 	p->bordercmp = p->border;
 	p->bordermodcmp = p->bordermod;
 
