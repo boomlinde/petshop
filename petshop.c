@@ -164,7 +164,7 @@ skipredraw:
 						lastxo = xo;
 						lastyo = yo;
 					}
-				} else goto skipredraw;
+				}
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				/* Handle mouse click like Return on keyboard */
