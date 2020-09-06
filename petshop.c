@@ -131,7 +131,8 @@ skipredraw:
 			case SDL_KEYDOWN:
 				lua_getglobal(L, "handle");
 				lua_createtable(L, 0, 2);
-				lua_pushstring(L, "t"); lua_pushnumber(L, event.type); lua_settable(L, -3);
+				lua_pushstring(L, "t"); lua_pushnumber(L, event.type);
+				lua_settable(L, -3);
 
 				lua_pushstring(L, "key");
 				lua_pushstring(L, SDL_GetKeyName(event.key.keysym.sym));
@@ -163,7 +164,17 @@ skipredraw:
 						lastxo = xo;
 						lastyo = yo;
 					}
-				}
+				} else goto skipredraw;
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				/* Handle mouse click like Return on keyboard */
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					lua_getglobal(L, "handle");
+					lua_createtable(L, 0, 2);
+					lua_pushstring(L, "t"); lua_pushnumber(L, SDL_KEYDOWN); lua_settable(L, -3);
+					lua_pushstring(L, "key"); lua_pushstring(L, "Return"); lua_settable(L, -3);
+					handle_event(L);
+				} else goto skipredraw;
 				break;
 			default:
 				goto skipredraw;

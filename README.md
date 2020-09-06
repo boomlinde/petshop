@@ -62,6 +62,9 @@ Commands
     Backspace         - Reset selection size to 1x1
     y, Space          - Yank selection
     Return            - Open/close palette
+	p                 - While the palette is open, position and shape
+	                    the cursor according to the last palette
+						selection
     Tab               - Swap between main picture and scratchpad
     u                 - Undo last command
     U                 - Redo last command

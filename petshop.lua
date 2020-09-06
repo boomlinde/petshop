@@ -296,6 +296,7 @@ editor = {
 		{ ev.KEYDOWN, 'Space', function () editor:copy() end },
 		{ ev.KEYDOWN, 'Return', function () editor:togglepalette() end },
 		{ ev.KEYDOWN, 'Tab', function () editor:togglescratch() end },
+		{ ev.TEXT, 'p', function () editor:palettepos() end },
 		{ ev.TEXT, 'u', function () undo(picture); editor:draw() end },
 		{ ev.TEXT, 'U', function () redo(picture); editor:draw() end },
 		{ ev.TEXT, 'f', function () editor:paintbrush(false, true, true) end },
@@ -410,6 +411,7 @@ editor = {
 					oldfilename = filename
 					if self.afterprompt ~= nil then
 						self:afterprompt()
+						ht.setmarker(self.mx, self.my, self.mw, self.mh)
 						self:draw()
 					end
 				elseif event.key == 'Backspace' then
@@ -421,6 +423,8 @@ editor = {
 				end
 			elseif event.t == ev.TEXT then
 				filename = filename .. event.key
+			elseif event.t == ev.MOUSEMOTION then
+				self:handlemouse(event.x, event.y)
 			end
 			mx, my = redrawprompt()
 			ht.setmarker(mx, my, 1, 1)
@@ -463,25 +467,11 @@ editor = {
 				end
 				self:draw()
 				self:cursor_right()
+			elseif event.t == ev.MOUSEMOTION then
+				self:handlemouse(event.x, event.y)
 			end
 		elseif event.t == ev.MOUSEMOTION then
-			if not shift then
-				self.mx = event.x
-				if self.mx + self.mw > 39 then
-					self.mx = 40 - self.mw
-				end
-				self.my = event.y
-				if self.my + self.mh > 24 then
-					self.my = 25 - self.mh
-				end
-				ht.setmarker(self.mx, self.my, self.mw, self.mh)
-			else
-				self.mw = event.x + 1 - self.mx
-				self.mh = event.y + 1 - self.my
-				if self.mw < 1 then self.mw = 1 end
-				if self.mh < 1 then self.mh = 1 end
-				ht.setmarker(self.mx, self.my, self.mw, self.mh)
-			end
+			self:handlemouse(event.x, event.y)
 		else
 			for i = 1,#self.bindings do
 				local t, key, f
@@ -496,16 +486,43 @@ editor = {
 
 	togglepalette = function (self)
 		if self.palette then
+			self.tmp_x = self.mx
+			self.tmp_w = self.mw
+			self.tmp_y = self.my
+			self.tmp_h = self.mh
 			self:copy()
 		else
 			recolorpalette(self.brush.colors[0])
 		end
 		self.palette = not self.palette
-		self.tmp_x, self.mx = self.mx, self.tmp_x
-		self.tmp_y, self.my = self.my, self.tmp_y
-		self.tmp_w, self.mw = self.mw, self.tmp_w
-		self.tmp_h, self.mh = self.mh, self.tmp_h
 		self:draw()
+	end,
+
+	handlemouse = function (self, x, y)
+		if not shift then
+			self.mx = x
+			if self.mx + self.mw > 39 then
+				self.mx = 40 - self.mw
+			end
+			self.my = y
+			if self.my + self.mh > 24 then
+				self.my = 25 - self.mh
+			end
+		else
+			self.mw = x + 1 - self.mx
+			self.mh = y + 1 - self.my
+			if self.mw < 1 then self.mw = 1 end
+			if self.mh < 1 then self.mh = 1 end
+		end
+	end,
+
+	palettepos = function (self)
+		if self.palette then
+			self.mx = self.tmp_x
+			self.mw = self.tmp_w
+			self.my = self.tmp_y
+			self.mh = self.tmp_h
+		end
 	end,
 
 	copy = function (self)
@@ -598,50 +615,42 @@ editor = {
 	end,
 
 	cursor_up = function (self)
-		local min
-		if self.palette then min = 1 else min = 0 end
 		if ctrl then
 			self:roll(0, 1)
 		elseif shift then
 			if self.mh > 1 then self.mh = self.mh - 1 end
 		else
-			if self.my > min then self.my = self.my - 1 end
+			if self.my > 0 then self.my = self.my - 1 end
 		end
 	end,
 
 	cursor_down = function (self)
-		local max
-		if self.palette then max = 18 else max = 25 end
 		if ctrl then
 			self:roll(0, -1)
 		elseif shift then
-			if self.mh + self.my < max then self.mh = self.mh + 1 end
+			if self.mh + self.my < 25 then self.mh = self.mh + 1 end
 		else
-			if self.mh + self.my < max then self.my = self.my + 1 end
+			if self.mh + self.my < 25 then self.my = self.my + 1 end
 		end
 	end,
 
 	cursor_left = function (self)
-		local min
-		if self.palette then min = 1 else min = 0 end
 		if ctrl then
 			self:roll(1, 0)
 		elseif shift then
 			if self.mw > 1 then self.mw = self.mw - 1 end
 		else
-			if self.mx > min then self.mx = self.mx - 1 end
+			if self.mx > 0 then self.mx = self.mx - 1 end
 		end
 	end,
 
 	cursor_right = function (self)
-		local max
-		if self.palette then max = 17 else max = 40 end
 		if ctrl then
 			self:roll(-1, 0)
 		elseif shift and not self.insert then
-			if self.mw + self.mx < max then self.mw = self.mw + 1 end
+			if self.mw + self.mx < 40 then self.mw = self.mw + 1 end
 		else
-			if self.mw + self.mx < max then self.mx = self.mx + 1 end
+			if self.mw + self.mx < 40 then self.mx = self.mx + 1 end
 		end
 	end,
 }
