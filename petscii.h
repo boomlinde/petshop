@@ -48,7 +48,7 @@ static const uint32_t petscii_colors[] = {
 void petscii_init(struct petscii *p, uint8_t *chargen)
 {
 	p->s = 0;
-	pixels_init(&p->s, "petscii", 368, 256, 3);
+	pixels_init(&p->s, "petshop", 368, 256, 3);
 	p->chars = calloc(1000, sizeof (uint8_t));
 	p->colors = calloc(1000, sizeof (uint8_t));
 	p->cmp = calloc(1000, sizeof (uint16_t));
