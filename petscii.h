@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
+#define PIXELS_INTEGERSCALE
+#define PIXELS_WINDOWSCALE 3
 #define PIXELS_RENDERERFLAGS (SDL_RENDERER_ACCELERATED)
-#define PIXELS_IMPL
 #include "pixels.h"
 
 struct petscii {
@@ -23,7 +25,7 @@ struct petscii {
 
 	uint8_t *chargen;
 
-	struct pixels *s;
+	struct pixels s;
 };
 
 static const uint32_t petscii_colors[] = {
@@ -49,8 +51,9 @@ void petscii_destroy(struct petscii *p);
 
 int petscii_init(struct petscii *p, uint8_t *chargen)
 {
-	p->s = 0;
-	if (pixels_init(&p->s, "petshop", (40 + 3 + 3) * 8 , (25 + 3 + 3) * 8, 3)) {
+	if (!p) return 1;
+	memset(p, 0, sizeof(*p));
+	if (pixels_init(&p->s, "petshop", (40 + 3 + 3) * 8 , (25 + 3 + 3) * 8)) {
 		return 1;
 	}
 	p->chars = calloc(1000, sizeof (uint8_t));
@@ -112,16 +115,16 @@ petscii_drawborder(struct petscii *p)
 	/* top+bottom border */
 	for (y = 0; y < 3*8; y++) {
 		for (x = 0; x < (6 + 40)*8 ; x++) {
-			pixels_set(p->s, x, y, color);
-			pixels_set(p->s, x, y + (3 + 25)*8, color);
+			pixels_set(&p->s, x, y, color);
+			pixels_set(&p->s, x, y + (3 + 25)*8, color);
 		}
 	}
 
 	/* sides */
 	for (y = 3*8; y < (3 + 25)*8; y++) {
 		for (x = 0; x < 3*8 ; x++) {
-			pixels_set(p->s, x, y, color);
-			pixels_set(p->s, x + (3 + 40)*8, y, color);
+			pixels_set(&p->s, x, y, color);
+			pixels_set(&p->s, x + (3 + 40)*8, y, color);
 		}
 	}
 
@@ -157,7 +160,7 @@ petscii_drawchar(struct petscii *p, int x, int y, uint8_t ch, uint8_t fg, int ma
 			} else {
 				c = bgc;
 			}
-			pixels_set(p->s, ox + ix, oy + iy, c);
+			pixels_set(&p->s, ox + ix, oy + iy, c);
 		}
 		++chargen;
 	}
@@ -201,7 +204,7 @@ petscii_flush(struct petscii *p)
 			changed = 1;
 		}
 	}
-	if (changed) pixels_flush(p->s);
+	if (changed) pixels_flush(&p->s);
 }
 
 #endif /* _PETSCII_H_ */

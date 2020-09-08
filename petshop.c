@@ -160,7 +160,7 @@ skipredraw:
 				skip = 0;
 			case SDL_MOUSEMOTION:
 				SDL_GetMouseState(&xm, &ym);
-				pixels_virtpos(pscreen.s, &xm, &ym);
+				pixels_virtpos(&pscreen.s, &xm, &ym);
 				xo = xm / 8 - 3;
 				yo = ym / 8 - 3;
 				if (xo < 0) xo = 0;
@@ -321,7 +321,7 @@ l_getmouse(lua_State *L)
 	int x, y;
 
 	SDL_GetMouseState(&x, &y);
-	pixels_virtpos(pscreen.s, &x, &y);
+	pixels_virtpos(&pscreen.s, &x, &y);
 	lua_pushnumber(L, x);
 	lua_pushnumber(L, y);
 
@@ -334,8 +334,8 @@ l_setmouse(lua_State *L)
 	int x, y;
 	x = (int)lua_tonumber(L, 1);
 	y = (int)lua_tonumber(L, 2);
-	pixels_realpos(pscreen.s, &x, &y);
-	SDL_WarpMouseInWindow(pscreen.s->window, x, y);
+	pixels_realpos(&pscreen.s, &x, &y);
+	SDL_WarpMouseInWindow(pscreen.s.window, x, y);
 	return 0;
 }
 
