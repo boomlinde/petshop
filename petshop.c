@@ -65,8 +65,8 @@ main(int argc, char **argv)
 	// API functions
 	lua_createtable(L, 0, 10);
 	lua_pushstring(L, "setscreen"); lua_pushcfunction(L, l_setscreen); lua_settable(L, -3);
-	lua_pushstring(L, "setcolor"); lua_pushcfunction(L, l_setcolor); lua_settable(L, -3); 
-	lua_pushstring(L, "setborder"); lua_pushcfunction(L, l_setborder); lua_settable(L, -3); 
+	lua_pushstring(L, "setcolor"); lua_pushcfunction(L, l_setcolor); lua_settable(L, -3);
+	lua_pushstring(L, "setborder"); lua_pushcfunction(L, l_setborder); lua_settable(L, -3);
 	lua_pushstring(L, "setbg"); lua_pushcfunction(L, l_setbg); lua_settable(L, -3);
 	lua_pushstring(L, "cls"); lua_pushcfunction(L, l_cls); lua_settable(L, -3);
 	lua_pushstring(L, "quit"); lua_pushcfunction(L, l_quit); lua_settable(L, -3);
@@ -275,7 +275,6 @@ l_lowercase(lua_State *L)
 static int
 l_quit(lua_State *L)
 {
-	
 	running = 0;
 	err = lua_tonumber(L, 1);
 	return 0;

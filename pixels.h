@@ -65,7 +65,7 @@ int pixels_init(struct pixels **p, const char *title, int width, int height, int
 			SDL_TEXTUREACCESS_STREAMING, width, height);
 	if (!(*p)->texture) goto err;
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"); 
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
 	return 0;
 err:
