@@ -27,10 +27,9 @@ static int l_setmouse(lua_State *L);
 
 static void handle_event(lua_State *L);
 
-int running = 1;
-int err = 0;
-int scale = 3;
-struct petscii pscreen;
+static int running = 1;
+static int err = 0;
+static struct petscii pscreen;
 
 int
 main(int argc, char **argv)
@@ -45,7 +44,10 @@ main(int argc, char **argv)
 	xo = 0;
 	yo = 0;
 
-	petscii_init(&pscreen, chargen_bin);
+	if (petscii_init(&pscreen, chargen_bin)) {
+		fputs("failed to initialize screen\n", stderr);
+		goto exit;
+	}
 
 	pscreen.bg = 6;
 	pscreen.border = 14;

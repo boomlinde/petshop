@@ -45,13 +45,21 @@ static const uint32_t petscii_colors[] = {
 	0x959595,
 };
 
-void petscii_init(struct petscii *p, uint8_t *chargen)
+void petscii_destroy(struct petscii *p);
+
+int petscii_init(struct petscii *p, uint8_t *chargen)
 {
 	p->s = 0;
-	pixels_init(&p->s, "petshop", 368, 256, 3);
+	if (pixels_init(&p->s, "petshop", (40 + 3 + 3) * 8 , (25 + 3 + 3) * 8, 3)) {
+		return 1;
+	}
 	p->chars = calloc(1000, sizeof (uint8_t));
 	p->colors = calloc(1000, sizeof (uint8_t));
 	p->cmp = calloc(1000, sizeof (uint16_t));
+	if (!p->chars || !p->colors || !p->cmp) {
+		petscii_destroy(p);
+		return 1;
+	}
 	memset(p->cmp, 0xff, 1000 * sizeof (uint16_t));
 
 	p->chargen = chargen;
@@ -71,6 +79,8 @@ void petscii_init(struct petscii *p, uint8_t *chargen)
 	p->my = 0;
 	p->mw = 0;
 	p->mh = 0;
+
+	return 0;
 }
 
 void petscii_destroy(struct petscii *p)

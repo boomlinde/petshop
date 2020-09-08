@@ -73,13 +73,33 @@ err:
 	return 1;
 }
 
+float pixels_getrect(struct pixels *p, SDL_Rect *r)
+{
+	float xratio, yratio, scale;
+	int ww, wh;
+
+
+	SDL_GetRendererOutputSize(p->renderer, &ww, &wh);
+
+	xratio = (float)ww / (float)p->width;
+	yratio = (float)wh / (float)p->height;
+	scale = xratio < yratio ? xratio : yratio;
+
+	if (!r) return scale;
+
+	r->w = (float)p->width * scale;
+	r->h = (float)p->height * scale;
+	r->x = ww / 2 - r->w / 2;
+	r->y = wh / 2 - r->h / 2;
+
+	return scale;
+}
+
 void pixels_flush(struct pixels *p)
 {
 	uint32_t *tpixels;
 	int pitch;
-	float xratio, yratio, scale;
-	int wout, hout;
-	SDL_Rect dst;
+	SDL_Rect r;
 
 	if (SDL_LockTexture(p->texture, NULL, (void **)&tpixels, &pitch)) return;
 	if (pitch != 4 * p->width) {
@@ -89,59 +109,31 @@ void pixels_flush(struct pixels *p)
 
 	memcpy(tpixels, p->pixels, p->width * p->height * sizeof (uint32_t));
 	SDL_UnlockTexture(p->texture);
-	
-	SDL_GetRendererOutputSize(p->renderer, &wout, &hout);
-	xratio = (float)wout / (float)(p->width);
-	yratio = (float)hout / (float)(p->height);
-	scale = xratio > yratio ? yratio : xratio;
 
-	dst.x = (float)wout / 2.f - (float)p->width * scale / 2.f;
-	dst.y = (float)hout / 2.f - (float)p->height * scale / 2.f;
-	dst.w = (float)p->width * scale;
-	dst.h = (float)p->height * scale;
-
+	pixels_getrect(p, &r);
 	SDL_RenderClear(p->renderer);
-	SDL_RenderCopy(p->renderer, p->texture, NULL, &dst);
+	SDL_RenderCopy(p->renderer, p->texture, NULL, &r);
 	SDL_RenderPresent(p->renderer);
 }
 
 void pixels_virtpos(struct pixels *p, int *x, int *y)
 {
-	float xratio, yratio, scale, xf, yf;
-	int wout, hout;
+	SDL_Rect r;
+	float scale;
 
-	SDL_GetRendererOutputSize(p->renderer, &wout, &hout);
-	xratio = (float)wout / (float)(p->width);
-	yratio = (float)hout / (float)(p->height);
-	scale = xratio > yratio ? yratio : xratio;
-
-	xf = *x - ((float)wout - (float)p->width * scale) / 2.f;
-	yf = *y - ((float)hout - (float)p->height * scale) / 2.f;
-	xf /= scale;
-	yf /= scale;
-
-	*x = xf;
-	*y = yf;
+	scale = pixels_getrect(p, &r);
+	*x = (float)(*x - r.x) / scale;
+	*y = (float)(*y - r.y) / scale;
 }
 
 void pixels_realpos(struct pixels *p, int *x, int *y)
 {
-	float xratio, yratio, scale;
-	int wout, hout;
-	float xv, yv;
+	SDL_Rect r;
+	float scale;
 
-	SDL_GetRendererOutputSize(p->renderer, &wout, &hout);
-	xratio = (float)wout / (float)(p->width);
-	yratio = (float)hout / (float)(p->height);
-	scale = xratio > yratio ? yratio : xratio;
-
-	xv = 0.5 + ((float)wout - (float)p->width * scale) / 2.f;
-	yv = 0.5 + ((float)hout - (float)p->height * scale) / 2.f;
-	xv += ((float)*x + 0.5) * scale;
-	yv += ((float)*y + 0.5) * scale;
-
-	*x = xv;
-	*y = yv;
+	scale = pixels_getrect(p, &r);
+	*x = (float)r.x + (float)*x * scale;
+	*y = (float)r.y + (float)*y * scale;
 }
 
 void pixels_set(struct pixels *p, int x, int y, uint32_t color)
@@ -151,7 +143,7 @@ void pixels_set(struct pixels *p, int x, int y, uint32_t color)
 
 void pixels_destroy(struct pixels **p)
 {
-	if (*p) return;
+	if (!*p) return;
 
 	if ((*p)->texture) SDL_DestroyTexture((*p)->texture);
 	if ((*p)->renderer) SDL_DestroyRenderer((*p)->renderer);
