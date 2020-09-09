@@ -192,7 +192,7 @@ skipredraw:
 					emulated = "Y";
 					break;
 				case SDL_BUTTON_MIDDLE:
-					emulated = "Backspace";
+					emulated = "T";
 					break;
 				default:
 					goto skipredraw;

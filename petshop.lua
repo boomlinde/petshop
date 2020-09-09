@@ -313,7 +313,7 @@ editor = {
 		{ ev.KEYDOWN, 'F1', function () editor:initsave() end },
 		{ ev.KEYDOWN, 'F2', function () editor:initload() end },
 		{ ev.TEXT, 'C', function () setcase(not lowercase); end },
-		{ ev.TEXT, 't', function ()  editor:fittobrush() end },
+		{ ev.KEYDOWN, 'T', function ()  editor:fittobrush() end },
 		{ ev.TEXT, 'm', function ()  editor:togglemouse() end },
 	},
 

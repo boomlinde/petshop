@@ -100,7 +100,7 @@ Mouse control may be toggled by pressing 'm', By default, it's enabled.
 
 The selection may be controlled using the mouse. Holding shift, the selection
 size can be changed by moving the mouse. The left, right and middle buttons
-emulate keyboard presses; Return, y and Backspace respectively.
+emulate keyboard presses; Return, y and t respectively.
 
 Generate an executable
 ----------------------
