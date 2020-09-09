@@ -262,7 +262,7 @@ end
 
 editor = {
 	mw = 1, mh = 1, mx = 0, my = 0,
-	tmp_x = 1, tmp_y = 1, tmp_w = 1, tmp_h = 1,
+	tmp_x = 1, tmp_y = 11, tmp_w = 1, tmp_h = 1,
 	brush = { w = 1, h = 1, chars = { [0] = 0xa0 }, colors = { [0] = 0xe } },
 	palette = false,
 	insert = false,
@@ -272,6 +272,7 @@ editor = {
 	rshift = false,
 	shift = false,
 	oldshift = false,
+	mouseenabled = true,
 
 	bindings = {
 		{ ev.KEYDOWN, 'Q', function () if ctrl then ht.quit() end end },
@@ -297,7 +298,6 @@ editor = {
 		{ ev.KEYDOWN, 'Return', function () editor:togglepalette() end },
 		{ ev.KEYDOWN, 'Escape', function () editor:exitpalette() end },
 		{ ev.KEYDOWN, 'Tab', function () editor:togglescratch() end },
-		{ ev.TEXT, 'p', function () editor:palettepos() end },
 		{ ev.TEXT, 'u', function () undo(picture); editor:draw() end },
 		{ ev.TEXT, 'U', function () redo(picture); editor:draw() end },
 		{ ev.TEXT, 'f', function () editor:paintbrush(false, true, true) end },
@@ -314,16 +314,29 @@ editor = {
 		{ ev.KEYDOWN, 'F2', function () editor:initload() end },
 		{ ev.TEXT, 'C', function () setcase(not lowercase); end },
 		{ ev.TEXT, 't', function ()  editor:fittobrush() end },
+		{ ev.TEXT, 'm', function ()  editor:togglemouse() end },
 	},
+
+	togglemouse = function (self)
+		self.mouseenabled = not self.mouseenabled
+		if self.mouseenabled then
+			ht.mousevisible(1)
+			x, y = ht.getmouse()
+		else
+			ht.mousevisible(0)
+		end
+	end,
 
 	onshift = function (self)
 		self.shift = self.rshift or self.lshift
 		if self.oldshift ~= self.shift then
 			self.oldshift = self.shift
-			if self.shift then
-				ht.setmouse(4 + 8 * (3 + self.mx + self.mw - 1), 4 + 8 * (3 + self.my + self.mh - 1))
-			else
-				ht.setmouse(4 + 8 * (3 + self.mx), 4 + 8 * (3 + self.my))
+			if self.mouseenabled then
+				if self.shift then
+					ht.setmouse(4 + 8 * (3 + self.mx + self.mw - 1), 4 + 8 * (3 + self.my + self.mh - 1))
+				else
+					ht.setmouse(4 + 8 * (3 + self.mx), 4 + 8 * (3 + self.my))
+				end
 			end
 
 		end
@@ -500,30 +513,40 @@ editor = {
 
 	togglepalette = function (self)
 		if self.palette then
-			self.tmp_x = self.mx
-			self.tmp_w = self.mw
-			self.tmp_y = self.my
-			self.tmp_h = self.mh
 			self:copy()
 		else
 			recolorpalette(self.brush.colors[0])
+		end
+		self.tmp_x, self.mx = self.mx, self.tmp_x
+		self.tmp_y, self.my = self.my, self.tmp_y
+		self.tmp_w, self.mw = self.mw, self.tmp_w
+		self.tmp_h, self.mh = self.mh, self.tmp_h
+		if self.mouseenabled then
+			ht.setmouse(4 + 8 * (3 + self.mx), 4 + 8 * (3 + self.my))
 		end
 		self.palette = not self.palette
 		self:draw()
 	end,
 
 	exitpalette = function (self)
-		if self.palette then
-			self.tmp_x = self.mx
-			self.tmp_w = self.mw
-			self.tmp_y = self.my
-			self.tmp_h = self.mh
+		if not self.palette then
+			return
 		end
 		self.palette = false
+		self.tmp_x, self.mx = self.mx, self.tmp_x
+		self.tmp_y, self.my = self.my, self.tmp_y
+		self.tmp_w, self.mw = self.mw, self.tmp_w
+		self.tmp_h, self.mh = self.mh, self.tmp_h
+		if self.mouseenabled then
+			ht.setmouse(4 + 8 * (3 + self.mx), 4 + 8 * (3 + self.my))
+		end
 		self:draw()
 	end,
 
 	handlemouse = function (self, x, y)
+		if not self.mouseenabled then
+			return
+		end
 		if not self.shift then
 			self.mx = x
 			if self.mx + self.mw > 39 then
@@ -533,20 +556,16 @@ editor = {
 			if self.my + self.mh > 24 then
 				self.my = 25 - self.mh
 			end
+			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		else
 			self.mw = x + 1 - self.mx
 			self.mh = y + 1 - self.my
 			if self.mw < 1 then self.mw = 1 end
 			if self.mh < 1 then self.mh = 1 end
-		end
-	end,
-
-	palettepos = function (self)
-		if self.palette then
-			self.mx = self.tmp_x
-			self.mw = self.tmp_w
-			self.my = self.tmp_y
-			self.mh = self.tmp_h
+			if self.palette then
+				if self.mw + self.mx >= 17 then self.mw = 17 - self.mx end
+				if self.mh + self.my >= 18 then self.mh = 18 - self.my end
+			end
 		end
 	end,
 
@@ -646,6 +665,7 @@ editor = {
 			if self.mh > 1 then self.mh = self.mh - 1 end
 		else
 			if self.my > 0 then self.my = self.my - 1 end
+			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		end
 	end,
 
@@ -653,9 +673,12 @@ editor = {
 		if ctrl then
 			self:roll(0, -1)
 		elseif self.shift then
-			if self.mh + self.my < 25 then self.mh = self.mh + 1 end
+			local clamp = 25
+			if self.palette then clamp = 18 end
+			if self.mh + self.my < clamp then self.mh = self.mh + 1 end
 		else
 			if self.mh + self.my < 25 then self.my = self.my + 1 end
+			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		end
 	end,
 
@@ -666,6 +689,7 @@ editor = {
 			if self.mw > 1 then self.mw = self.mw - 1 end
 		else
 			if self.mx > 0 then self.mx = self.mx - 1 end
+			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		end
 	end,
 
@@ -673,11 +697,21 @@ editor = {
 		if ctrl then
 			self:roll(-1, 0)
 		elseif self.shift and not self.insert then
-			if self.mw + self.mx < 40 then self.mw = self.mw + 1 end
+			local clamp = 40
+			if self.palette then clamp = 17 end
+			if self.mw + self.mx < clamp then self.mw = self.mw + 1 end
 		else
 			if self.mw + self.mx < 40 then self.mx = self.mx + 1 end
+			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		end
 	end,
+
+	clamp_selection = function (self, lox, loy, hix, hiy)
+		if self.mx < lox then self.mx = lox end
+		if self.my < loy then self.my = loy end
+		if self.mx + self.mw >= hix then self.mx = hix - self.mw end
+		if self.my + self.mh >= hiy then self.my = hiy - self.mh end
+	end
 }
 
 for i = 0,999 do

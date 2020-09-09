@@ -8,8 +8,6 @@ LDFLAGS += $(shell pkg-config --libs $(PKG))
 $(BIN): petshop.c luacode.h chargendata.h petscii.h pixels.h
 	gcc -o $(BIN) petshop.c $(CFLAGS) $(LDFLAGS)
 
-petshop.o: petshop.c luacode.h chargendata.h petscii.h pixels.h
-
 chargendata.h: chargen.bin
 	xxd -i chargen.bin > chargendata.h
 

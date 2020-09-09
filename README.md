@@ -64,9 +64,6 @@ Commands
     Return            - Open/close palette, copying the selection upon
                         exit
     Escape            - Leave palette (without copying selection)
-    p                 - While the palette is open, position and shape
-                        the cursor according to the last palette
-                        selection
     Tab               - Swap between main picture and scratchpad
     u                 - Undo last command
     U                 - Redo last command
@@ -91,12 +88,15 @@ Commands
                         was entered. You can leave insert mode by pressing
                         Escape
     t                 - Fit selection to yanked
+    m                 - Toggle mouse control
     C                 - Toggle between lower/upper case
     F1                - Save project
     F2                - Load project
 
 Mouse control
 -------------
+
+Mouse control may be toggled by pressing 'm', By default, it's enabled.
 
 The selection may be controlled using the mouse. Holding shift, the selection
 size can be changed by moving the mouse. The left, right and middle buttons
