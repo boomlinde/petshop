@@ -276,6 +276,10 @@ editor = {
 	oldshift = false,
 	mouseenabled = true,
 	currentholding = nil,
+	drawchars = true,
+	drawcolors = true,
+	drawspaces = true,
+	showflags = false,
 
 	bindings = {
 		{ ev.KEYDOWN, 'Q', function () if ctrl then ht.quit() end end },
@@ -318,6 +322,17 @@ editor = {
 		{ ev.KEYDOWN, 'C', function () if editor.shift then setcase(not lowercase) end end },
 		{ ev.KEYDOWN, 'T', function () editor:fittobrush() end },
 		{ ev.KEYDOWN, 'M', function () editor:togglemouse() end },
+
+
+		{ ev.KEYDOWN, '1', function () editor.drawchars = not editor.drawchars; editor.showflags = true; editor:draw() end },
+		{ ev.KEYDOWN, '2', function () editor.drawcolors = not editor.drawcolors; editor.showflags = true; editor:draw() end },
+		{ ev.KEYDOWN, '3', function () editor.drawspaces = not editor.drawspaces; editor.showflags = true; editor:draw() end },
+		{ ev.KEYUP, '1', function () editor.showflags = false; editor:draw() end },
+		{ ev.KEYUP, '2', function () editor.showflags = false; editor:draw() end },
+		{ ev.KEYUP, '3', function () editor.showflags = false; editor:draw() end },
+
+		{ ev.KEYDOWN, '4', function () if editor.palette then editor:togglepalette() else editor:paintbrush(not editor.drawspaces, editor.drawchars, editor.drawcolors) end end },
+		{ ev.KEYUP, '4', function () editor:enddraw() end },
 	},
 
 	togglemouse = function (self)
@@ -350,8 +365,25 @@ editor = {
 		if self.palette then table.insert(pics, palettepic) end
 		if self.prompting then table.insert(pics, promptpic) end
 		if self.insert then table.insert(pics, self.editframe) end
+		if self.showflags then table.insert(pics, self:flagpic()) end
 		redrawprompt()
 		drawpictures(pics)
+	end,
+
+	flagpic = function (self)
+		local out = { chars = {}, colors = {} }
+
+		local str = ""
+		if self.drawchars then str = str.."chr(*) " else str = str.."chr( ) " end
+		if self.drawcolors then str = str.."col(*) " else str = str.."col( ) " end
+		if self.drawspaces then str = str.."spc(*) " else str = str.."spc( )" end
+
+		local scr = ascii2scr(str)
+		for i = 1,#scr do
+			out.chars[40*24-1+i] = scr[i]
+			out.colors[40*24-1+i] = (bgcolor+1) % 16
+		end
+		return out
 	end,
 
 	initsave = function (self)

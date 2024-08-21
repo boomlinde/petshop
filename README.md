@@ -94,6 +94,14 @@ Commands
     C                 - Toggle between lower/upper case
     F1                - Save project
     F2                - Load project
+    1                 - Toggle drawing chars in stateful draw (see below)
+    2                 - Toggle drawing colors in stateful draw (see below)
+    3                 - Toggle drawing spaces in stateful draw (see below)
+    4                 - Stateful draw: draw characters and/or colors
+                        including/excluding spaces from the yank buffer,
+                        as set by the three flags above, unless in
+                        palette, in which case it has the same effect as
+                        pressing Space
 
 Mouse control
 -------------
@@ -102,7 +110,7 @@ Mouse control may be toggled by pressing 'm', By default, it's enabled.
 
 The selection may be controlled using the mouse. Holding shift, the selection
 size can be changed by moving the mouse. The left, right and middle buttons
-emulate keyboard presses; f, shift and y respectively.
+emulate keyboard presses; 4, shift and y respectively.
 
 Generate an executable
 ----------------------

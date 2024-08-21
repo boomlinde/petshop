@@ -202,7 +202,7 @@ skipredraw:
 				/* Handle mouse click like Return on keyboard */
 				switch (event.button.button) {
 				case SDL_BUTTON_LEFT:
-					emulated = "F";
+					emulated = "4";
 					break;
 				case SDL_BUTTON_RIGHT:
 					emulated = "Left Shift";
