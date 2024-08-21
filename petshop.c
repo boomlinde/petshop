@@ -140,6 +140,21 @@ skipredraw:
 				break;
 			case SDL_KEYUP:
 			case SDL_KEYDOWN:
+				/* Only handle repeat events from cursor movement keys */
+				if (event.key.repeat) {
+					if (!(
+						event.key.keysym.sym == SDLK_h ||
+						event.key.keysym.sym == SDLK_j ||
+						event.key.keysym.sym == SDLK_k ||
+						event.key.keysym.sym == SDLK_l ||
+						event.key.keysym.sym == SDLK_UP ||
+						event.key.keysym.sym == SDLK_DOWN ||
+						event.key.keysym.sym == SDLK_LEFT ||
+						event.key.keysym.sym == SDLK_RIGHT
+					)) {
+						break;
+					}
+				}
 				lua_getglobal(L, "handle");
 				lua_createtable(L, 0, 2);
 				lua_pushstring(L, "t"); lua_pushnumber(L, event.type);
@@ -182,24 +197,36 @@ skipredraw:
 					goto skipredraw;
 				}
 				break;
+			case SDL_MOUSEBUTTONUP:
 			case SDL_MOUSEBUTTONDOWN:
 				/* Handle mouse click like Return on keyboard */
 				switch (event.button.button) {
 				case SDL_BUTTON_LEFT:
-					emulated = "Return";
+					emulated = "F";
 					break;
 				case SDL_BUTTON_RIGHT:
-					emulated = "Y";
+					emulated = "Left Shift";
 					break;
 				case SDL_BUTTON_MIDDLE:
-					emulated = "T";
+					emulated = "Y";
 					break;
 				default:
 					goto skipredraw;
 				}
 				lua_getglobal(L, "handle");
 				lua_createtable(L, 0, 2);
-				lua_pushstring(L, "t"); lua_pushnumber(L, SDL_KEYDOWN); lua_settable(L, -3);
+				lua_pushstring(L, "t");
+				switch (event.type) {
+				case SDL_MOUSEBUTTONUP:
+					lua_pushnumber(L, SDL_KEYUP);
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+					lua_pushnumber(L, SDL_KEYDOWN);
+					break;
+				default:
+					/* unreachable */
+				}
+				lua_settable(L, -3);
 				lua_pushstring(L, "key"); lua_pushstring(L, emulated); lua_settable(L, -3);
 				handle_event(L);
 				break;

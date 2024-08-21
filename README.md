@@ -60,8 +60,8 @@ Commands
                         (shifted: change selection size)
                         (ctrl: roll selection)
     Backspace         - Reset selection size to 1x1
-    y, Space          - Yank selection
-    Return            - Open/close palette, copying the selection upon
+    y                 - Yank selection
+    Space             - Open/close palette, copying the selection upon
                         exit
     Escape            - Leave palette (without copying selection)
     Tab               - Swap between main picture and scratchpad
@@ -69,6 +69,8 @@ Commands
     U                 - Redo last command
     f                 - Paint yanked characters/colors over selection
                         (shifted: don't paint yanked spaces ($20))
+                        In the palette, this instead has the same
+                        effect as Space.
     d                 - Paint yanked characters over selection
                         (shifted: don't paint yanked spaces ($20))
     s                 - Paint yanked colors over selection
@@ -100,7 +102,7 @@ Mouse control may be toggled by pressing 'm', By default, it's enabled.
 
 The selection may be controlled using the mouse. Holding shift, the selection
 size can be changed by moving the mouse. The left, right and middle buttons
-emulate keyboard presses; Return, y and t respectively.
+emulate keyboard presses; f, shift and y respectively.
 
 Generate an executable
 ----------------------

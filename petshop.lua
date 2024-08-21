@@ -275,6 +275,7 @@ editor = {
 	shift = false,
 	oldshift = false,
 	mouseenabled = true,
+	currentholding = nil,
 
 	bindings = {
 		{ ev.KEYDOWN, 'Q', function () if ctrl then ht.quit() end end },
@@ -296,27 +297,27 @@ editor = {
 		{ ev.KEYDOWN, 'L', function () editor:cursor_right() end },
 		{ ev.KEYDOWN, 'Backspace', function () editor:reset_wh() end },
 		{ ev.KEYDOWN, 'Y', function () editor:copy() end },
-		{ ev.KEYDOWN, 'Space', function () editor:copy() end },
-		{ ev.KEYDOWN, 'Return', function () editor:togglepalette() end },
+		{ ev.KEYDOWN, 'Space', function () editor:togglepalette() end },
 		{ ev.KEYDOWN, 'Escape', function () editor:exitpalette() end },
 		{ ev.KEYDOWN, 'Tab', function () editor:togglescratch() end },
-		{ ev.TEXT, 'u', function () undo(picture); editor:draw() end },
-		{ ev.TEXT, 'U', function () redo(picture); editor:draw() end },
-		{ ev.TEXT, 'f', function () editor:paintbrush(false, true, true) end },
-		{ ev.TEXT, 'F', function () editor:paintbrush(true, true, true) end },
-		{ ev.TEXT, 'd', function () editor:paintbrush(false, true, false) end },
-		{ ev.TEXT, 'D', function () editor:paintbrush(true, true, false) end },
-		{ ev.TEXT, 's', function () editor:paintbrush(false, false, true) end },
-		{ ev.TEXT, 'S', function () editor:paintbrush(true, false, true) end },
-		{ ev.TEXT, 'I', function () editor:invert() end },
+		{ ev.KEYDOWN, 'U', function () if editor.shift then redo(picture) else undo(picture) end; editor:draw() end },
+
+		{ ev.KEYDOWN, 'F', function () if editor.palette then editor:togglepalette() else editor:paintbrush(editor.shift, true, true) end end },
+		{ ev.KEYDOWN, 'D', function () editor:paintbrush(editor.shift, true, false) end },
+		{ ev.KEYDOWN, 'S', function () editor:paintbrush(editor.shift, false, true) end },
+		{ ev.KEYUP, 'F', function () editor:enddraw() end },
+		{ ev.KEYUP, 'D', function () editor:enddraw() end },
+		{ ev.KEYUP, 'S', function () editor:enddraw() end },
+
 		{ ev.KEYDOWN, 'X', function () editor:flip() end },
 		{ ev.KEYDOWN, 'B', function () editor:setbgborder() end },
+		{ ev.TEXT, 'I', function () editor:invert() end },
 		{ ev.TEXT, 'i', function () editor:startinsert() end },
 		{ ev.KEYDOWN, 'F1', function () editor:initsave() end },
 		{ ev.KEYDOWN, 'F2', function () editor:initload() end },
-		{ ev.TEXT, 'C', function () setcase(not lowercase); end },
-		{ ev.KEYDOWN, 'T', function ()  editor:fittobrush() end },
-		{ ev.TEXT, 'm', function ()  editor:togglemouse() end },
+		{ ev.KEYDOWN, 'C', function () if editor.shift then setcase(not lowercase) end end },
+		{ ev.KEYDOWN, 'T', function () editor:fittobrush() end },
+		{ ev.KEYDOWN, 'M', function () editor:togglemouse() end },
 	},
 
 	togglemouse = function (self)
@@ -423,6 +424,10 @@ editor = {
 	togglescratch = function (self)
 		picture, scratch = scratch, picture
 		self:draw()
+	end,
+
+	enddraw = function(self)
+		self.currentholding = nil
 	end,
 
 	handle = function (self, event)
@@ -546,10 +551,10 @@ editor = {
 	end,
 
 	handlemouse = function (self, x, y)
-		if not self.mouseenabled then
-			return
-		end
+		if not self.mouseenabled or self.insert then return end
 		if not self.shift then
+			local oldmx = self.mx
+			local oldmy = self.my
 			self.mx = x
 			if self.mx + self.mw > (width - 1) then
 				self.mx = width - self.mw
@@ -559,6 +564,12 @@ editor = {
 				self.my = height - self.mh
 			end
 			if self.palette then self:clamp_selection(1, 1, 17, 18) end
+			if self.currentholding ~= nil then
+				if oldmx ~= self.mx or oldmy ~= my then
+					local ch = self.currentholding
+					self:paintbrush(ch.skipspace, ch.drawchar, ch.drawcolor)
+				end
+			end
 		else
 			self.mw = x + 1 - self.mx
 			self.mh = y + 1 - self.my
@@ -595,7 +606,16 @@ editor = {
 
 	paintbrush = function (self, skipspace, drawchar, drawcolor)
 		if self.palette then return end
-		local frame = newframe()
+		if self.currentholding == nil then
+			self.currentholding = {
+				skipspace = skipspace,
+				drawchar = drawchar,
+				drawcolor = drawcolor,
+			}
+			local frame = newframe()
+			addframe(picture, frame)
+		end
+		local frame = picture[picture.tip]
 		for y = 0,self.mh-1 do
 			for x = 0,self.mw-1 do
 				local index = (self.mx + x) + (self.my + y) * width
@@ -610,7 +630,6 @@ editor = {
 				end
 			end
 		end
-		addframe(picture, frame)
 		self:draw()
 	end,
 
