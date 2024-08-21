@@ -2,6 +2,8 @@
 if unpack == nil then unpack = table.unpack end
 
 maxundo = 20
+width = 40
+height = 25
 
 lctrl = false
 rctrl = false
@@ -92,21 +94,21 @@ end
 function recolorpalette(c)
 	for y = 1,16 do
 		for x = 1,16 do
-			palettepic.colors[x + y * 40] = c
+			palettepic.colors[x + y * width] = c
 		end
 	end
 end
 
 function redrawprompt()
-	for x=0,39 do
-		promptpic.chars[x + 24 * 40] = 0x20
-		promptpic.colors[x + 24 * 40] = bgcolor + 11
+	for x=0,(width - 1) do
+		promptpic.chars[x + (height - 1) * width] = 0x20
+		promptpic.colors[x + (height - 1) * width] = bgcolor + 11
 	end
 	local s = ascii2scr(prompt .. filename)
 	for x=1,#s do
-		promptpic.chars[(x-1) + 24 * 40] = s[x]
+		promptpic.chars[(x-1) + (height - 1) * width] = s[x]
 	end
-	return #s, 24
+	return #s, (height - 1)
 end
 
 function setbg(c) bgcolor = c % 16; ht.setbg(bgcolor) end
@@ -116,10 +118,10 @@ function setcase(c) lowercase = c; ht.setlowercase(c) end
 function drawpictures(pictures)
 	for i = 1,#pictures do
 		local picture = pictures[i]
-		for y = 0,24 do
-			for x = 0,39 do
-				local char = picture.chars[x + y * 40]
-				local color = picture.colors[x + y * 40]
+		for y = 0,(height - 1) do
+			for x = 0,(width - 1) do
+				local char = picture.chars[x + y * width]
+				local color = picture.colors[x + y * width]
 				if char ~= nil then ht.setscreen(x, y, char) end
 				if color ~= nil then ht.setcolor(x, y, color) end
 			end
@@ -131,8 +133,8 @@ function getfrom(pictures, x, y)
 	local ret = { color = nil, char = nil }
 	for i = #pictures,1,-1 do
 		local picture = pictures[i]
-		if ret.color == nil then ret.color = picture.colors[x + y * 40] end
-		if ret.char == nil then ret.char = picture.chars[x + y * 40] end
+		if ret.color == nil then ret.color = picture.colors[x + y * width] end
+		if ret.char == nil then ret.char = picture.chars[x + y * width] end
 	end
 	return ret
 end
@@ -190,8 +192,8 @@ function saveproject(filename)
 	local f, err = io.open(filename, 'wb')
 	if f == nil then return false end
 
-	for y = 0,24 do
-		for x = 0,39 do
+	for y = 0,(height - 1) do
+		for x = 0,(width - 1) do
 			local pic = getfrom(picture, x, y)
 			table.insert(pic_char, pic.char)
 			table.insert(pic_col, pic.color)
@@ -218,11 +220,11 @@ end
 
 function merge(frames)
 	local ret = newframe()
-	for y = 0,24 do
-		for x = 0,39 do
+	for y = 0,(height - 1) do
+		for x = 0,(width - 1) do
 			local c = getfrom(frames, x, y)
-			ret.chars[x + y * 40] = c.char
-			ret.colors[x + y * 40] = c.color
+			ret.chars[x + y * width] = c.char
+			ret.colors[x + y * width] = c.color
 		end
 	end
 	return ret
@@ -382,11 +384,11 @@ editor = {
 				local c = getfrom(pics, x, y)
 				local newx = self.mx + self.mw - (x - self.mx) - 1
 				if self.shift then
-					frame.chars[x + newy * 40] = flip_vertical[c.char + 1]
-					frame.colors[x + newy * 40] = c.color
+					frame.chars[x + newy * width] = flip_vertical[c.char + 1]
+					frame.colors[x + newy * width] = c.color
 				else
-					frame.chars[newx + y * 40] = flip_horizontal[c.char + 1]
-					frame.colors[newx + y * 40] = c.color
+					frame.chars[newx + y * width] = flip_horizontal[c.char + 1]
+					frame.colors[newx + y * width] = c.color
 				end
 			end
 		end
@@ -409,7 +411,7 @@ editor = {
 		for y = self.my,self.my+self.mh-1 do
 			for x = self.mx,self.mx+self.mw-1 do
 				local c = getfrom(pics, x, y).char
-				local index = x + y * 40
+				local index = x + y * width
 				if c < 0x80 then c = c + 0x80 else c = c - 0x80 end
 				frame.chars[index] = c
 			end
@@ -462,8 +464,8 @@ editor = {
 				local char = ascii2scr(' ')[1]
 				for y = self.my,self.my+self.mh-1 do
 					for x = self.mx,self.mx+self.mw-1 do
-						self.editframe.chars[x + 40 * y] = char
-						self.editframe.colors[x + 40 * y] = self.brush.colors[0]
+						self.editframe.chars[x + width * y] = char
+						self.editframe.colors[x + width * y] = self.brush.colors[0]
 					end
 				end
 				self:draw()
@@ -488,8 +490,8 @@ editor = {
 				local char = ascii2scr(event.key)[1]
 				for y = self.my,self.my+self.mh-1 do
 					for x = self.mx,self.mx+self.mw-1 do
-						self.editframe.chars[x + 40 * y] = char
-						self.editframe.colors[x + 40 * y] = self.brush.colors[0]
+						self.editframe.chars[x + width * y] = char
+						self.editframe.colors[x + width * y] = self.brush.colors[0]
 					end
 				end
 				self:draw()
@@ -549,12 +551,12 @@ editor = {
 		end
 		if not self.shift then
 			self.mx = x
-			if self.mx + self.mw > 39 then
-				self.mx = 40 - self.mw
+			if self.mx + self.mw > (width - 1) then
+				self.mx = width - self.mw
 			end
 			self.my = y
-			if self.my + self.mh > 24 then
-				self.my = 25 - self.mh
+			if self.my + self.mh > (height - 1) then
+				self.my = height - self.mh
 			end
 			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		else
@@ -596,7 +598,7 @@ editor = {
 		local frame = newframe()
 		for y = 0,self.mh-1 do
 			for x = 0,self.mw-1 do
-				local index = (self.mx + x) + (self.my + y) * 40
+				local index = (self.mx + x) + (self.my + y) * width
 				local bindex = (x % self.brush.w) + (y % self.brush.h) * self.brush.w
 				if self.brush.chars[bindex] ~= 0x20 or not skipspace then
 					if drawchar then
@@ -622,11 +624,11 @@ editor = {
 		self.mw, self.mh = self.brush.w, self.brush.h
 		local xoffset = self.mx + self.mw
 		local yoffset = self.my + self.mh
-		if xoffset > 40 then
-			self.mx = self.mx - (xoffset - 40)
+		if xoffset > width then
+			self.mx = self.mx - (xoffset - width)
 		end
-		if yoffset > 25 then
-			self.my = self.my - (yoffset - 25)
+		if yoffset > height then
+			self.my = self.my - (yoffset - height)
 		end
 	end,
 
@@ -641,8 +643,8 @@ editor = {
 				local c = getfrom(pics, sx, sy)
 				local mx = x + self.mx
 				local my = y + self.my
-				frame.chars[mx + my * 40] = c.char
-				frame.colors[mx + my * 40] = c.color
+				frame.chars[mx + my * width] = c.char
+				frame.colors[mx + my * width] = c.color
 			end
 		end
 		addframe(picture, frame)
@@ -673,11 +675,11 @@ editor = {
 		if ctrl then
 			self:roll(0, -1)
 		elseif self.shift then
-			local clamp = 25
+			local clamp = height
 			if self.palette then clamp = 18 end
 			if self.mh + self.my < clamp then self.mh = self.mh + 1 end
 		else
-			if self.mh + self.my < 25 then self.my = self.my + 1 end
+			if self.mh + self.my < height then self.my = self.my + 1 end
 			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		end
 	end,
@@ -697,11 +699,11 @@ editor = {
 		if ctrl then
 			self:roll(-1, 0)
 		elseif self.shift and not self.insert then
-			local clamp = 40
+			local clamp = width
 			if self.palette then clamp = 17 end
 			if self.mw + self.mx < clamp then self.mw = self.mw + 1 end
 		else
-			if self.mw + self.mx < 40 then self.mx = self.mx + 1 end
+			if self.mw + self.mx < width then self.mx = self.mx + 1 end
 			if self.palette then self:clamp_selection(1, 1, 17, 18) end
 		end
 	end,
@@ -723,20 +725,20 @@ end
 
 for y = 0,18 do
 	for x = 0,17 do
-		palettepic.chars[x + y * 40] = 0x20
+		palettepic.chars[x + y * width] = 0x20
 	end
 end
 
 for x = 0,15 do
-	palettepic.colors[x + 1 + 17 * 40] = x
-	palettepic.chars[x + 1 + 17 * 40] = 0xa0
+	palettepic.colors[x + 1 + 17 * width] = x
+	palettepic.chars[x + 1 + 17 * width] = 0xa0
 end
 
 recolorpalette()
 
 for y = 0,15 do
 	for x = 0,15 do
-		palettepic.chars[x + 1 + (y + 1) * 40] = x + y * 16
+		palettepic.chars[x + 1 + (y + 1) * width] = x + y * 16
 	end
 end
 
