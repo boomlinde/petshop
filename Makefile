@@ -20,4 +20,4 @@ luacode.h: petshop.lua
 	-rm -f code.lua
 
 clean:
-	-rm -f $(BIN) $(BIN).exe chargendata.h luacode.h
+	-rm -f $(BIN) $(BIN).exe chargendata.h luacode.h *.o
