@@ -21,6 +21,30 @@ promptpic = { chars = {}, colors = {} }
 picture = { tip = 1, { chars = {} , colors = {}, }}
 scratch = { tip = 1, { chars = {} , colors = {}, }}
 
+palettemap = {
+	112,64,110,79,119,80,108,98,123,85,68,73,77,114,78,229,101,101,244,
+	93,87,93,116,91,106,225,32,97,71,81,72,107,86,115,244,116, 84,212,
+	109,64,125,76,111,122,124,226,126,74,70,75,78,113,77,245,117,71,199,
+	240,192,238,207,247,208,236,226,251,213,196,201,205,242,206,225,97,66,221,
+	221,215,221,244,219,231,97,160,225,199,209,200,235,214,243,118,246,72,200,
+	237,192,253,204,239,250,252,98,254,202,198,203,206,241,205,106,234,89,217,
+	100,111,121,98,248,247,227,160,233,223,92,104,102,127,35,103,231,103,231,
+	228,239,249,226,120,119,99,32,95,105,220,232,230,255,163,96,160,32,160,
+	100,111,82,70,64,68,69,119,99,228,239,210,198,195,196,197,247,227,160,
+	33,0,63,38,93,94,90,88,83,65,30,31,32,32,32,32,32,32,-1,
+	49,50,51,52,53,54,55,56,57,48,61,43,45,42,47,37,36,28,35,
+	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
+	20,21,22,23,24,25,26,44,46,59,58,34,39,40,41,27,29,60,62,
+	161,128,191,166,194,222,218,193,216,211,158,159,160,160,160,160,160,160,160,
+	177,178,179,180,181,182,183,184,185,176,189,171,173,170,175,165,164,156,163,
+	129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,
+	148,149,150,151,152,153,154,172,174,187,186,162,167,168,169,155,157,188,190,
+}
+print(#palettemap)
+
+palettewidth = 19
+paletteheight = 17
+
 flip_horizontal = {
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
 	0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
@@ -92,8 +116,8 @@ function ascii2scr(ascii)
 end
 
 function recolorpalette(c)
-	for y = 1,16 do
-		for x = 1,16 do
+	for y = 1,paletteheight do
+		for x = 1,palettewidth do
 			palettepic.colors[x + y * width] = c
 		end
 	end
@@ -595,7 +619,7 @@ editor = {
 			if self.my + self.mh > (height - 1) then
 				self.my = height - self.mh
 			end
-			if self.palette then self:clamp_selection(1, 1, 17, 18) end
+			if self.palette then self:clamp_selection(1, 1, palettewidth+1, paletteheight+2) end
 			if self.currentholding ~= nil then
 				if oldmx ~= self.mx or oldmy ~= my then
 					local ch = self.currentholding
@@ -608,8 +632,8 @@ editor = {
 			if self.mw < 1 then self.mw = 1 end
 			if self.mh < 1 then self.mh = 1 end
 			if self.palette then
-				if self.mw + self.mx >= 17 then self.mw = 17 - self.mx end
-				if self.mh + self.my >= 18 then self.mh = 18 - self.my end
+				if self.mw + self.mx >= palettewidth+1 then self.mw = palettewidth+1 - self.mx end
+				if self.mh + self.my >= paletteheight+2 then self.mh = paletteheight+2 - self.my end
 			end
 		end
 	end,
@@ -630,7 +654,7 @@ editor = {
 				self.brush.chars[x + y * self.brush.w] = c.char
 			end
 		end
-		if self.palette and self.my == 17 then
+		if self.palette and self.my == paletteheight+1 then
 			recolorpalette(self.brush.colors[0])
 			self:draw()
 		end
@@ -774,22 +798,22 @@ for i = 0,999 do
 	scratch[1].colors[i] = 14
 end
 
-for y = 0,18 do
-	for x = 0,17 do
+for y = 0,paletteheight+2 do
+	for x = 0,palettewidth+1 do
 		palettepic.chars[x + y * width] = 0x20
 	end
 end
 
 for x = 0,15 do
-	palettepic.colors[x + 1 + 17 * width] = x
-	palettepic.chars[x + 1 + 17 * width] = 0xa0
+	palettepic.colors[x + 1 + (paletteheight+1) * width] = x
+	palettepic.chars[x + 1 + (paletteheight+1) * width] = 0xa0
 end
 
 recolorpalette()
 
-for y = 0,15 do
-	for x = 0,15 do
-		palettepic.chars[x + 1 + (y + 1) * width] = x + y * 16
+for y = 0,paletteheight-1 do
+	for x = 0,palettewidth-1 do
+		palettepic.chars[x + 1 + (y + 1) * width] = palettemap[x + y * palettewidth]
 	end
 end
 
