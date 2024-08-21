@@ -40,7 +40,6 @@ palettemap = {
 	129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,
 	148,149,150,151,152,153,154,172,174,187,186,162,167,168,169,155,157,188,190,
 }
-print(#palettemap)
 
 palettewidth = 19
 paletteheight = 17
@@ -813,7 +812,7 @@ recolorpalette()
 
 for y = 0,paletteheight-1 do
 	for x = 0,palettewidth-1 do
-		palettepic.chars[x + 1 + (y + 1) * width] = palettemap[x + y * palettewidth]
+		palettepic.chars[x + 1 + (y + 1) * width] = palettemap[1 + x + y * palettewidth]
 	end
 end
 
