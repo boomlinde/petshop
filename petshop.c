@@ -151,7 +151,8 @@ skipredraw:
 						event.key.keysym.sym == SDLK_UP ||
 						event.key.keysym.sym == SDLK_DOWN ||
 						event.key.keysym.sym == SDLK_LEFT ||
-						event.key.keysym.sym == SDLK_RIGHT
+						event.key.keysym.sym == SDLK_RIGHT ||
+						event.key.keysym.sym == SDLK_BACKSPACE
 					)) {
 						break;
 					}
