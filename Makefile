@@ -8,7 +8,7 @@ LDFLAGS += -flto
 
 $(BIN): petshop.o
 
-petshop.o: petshop.c luacode.h chargendata.h petscii.h pixels.h
+petshop.o: petshop.c luacode.h chargendata.h petscii.h pixels.h stb_image_write.h
 
 chargendata.h: chargen.bin
 	xxd -i chargen.bin > chargendata.h

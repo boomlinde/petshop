@@ -25,6 +25,7 @@ static int l_setbordermod(lua_State *L);
 static int l_getmouse(lua_State *L);
 static int l_setmouse(lua_State *L);
 static int l_mousevisible(lua_State *L);
+static int l_screenshot(lua_State *L);
 
 static void handle_event(lua_State *L);
 
@@ -64,7 +65,7 @@ main(int argc, char **argv)
 	luaL_openlibs(L);
 
 	// API functions
-	lua_createtable(L, 0, 11);
+	lua_createtable(L, 0, 13);
 	lua_pushstring(L, "setscreen"); lua_pushcfunction(L, l_setscreen); lua_settable(L, -3);
 	lua_pushstring(L, "setcolor"); lua_pushcfunction(L, l_setcolor); lua_settable(L, -3);
 	lua_pushstring(L, "setborder"); lua_pushcfunction(L, l_setborder); lua_settable(L, -3);
@@ -77,7 +78,7 @@ main(int argc, char **argv)
 	lua_pushstring(L, "getmouse"); lua_pushcfunction(L, l_getmouse); lua_settable(L, -3);
 	lua_pushstring(L, "setmouse"); lua_pushcfunction(L, l_setmouse); lua_settable(L, -3);
 	lua_pushstring(L, "mousevisible"); lua_pushcfunction(L, l_mousevisible); lua_settable(L, -3);
-
+	lua_pushstring(L, "screenshot"); lua_pushcfunction(L, l_screenshot); lua_settable(L, -3);
 	lua_setglobal(L, "ht");
 
 	// Colors
@@ -372,6 +373,16 @@ static int
 l_mousevisible(lua_State *L)
 {
 	SDL_ShowCursor((int)lua_tonumber(L, 1));
+	return 0;
+}
+
+static int
+l_screenshot(lua_State *L)
+{
+	const char *filename = lua_tostring(L, 1);
+	if (!strlen(filename)) return 0;
+	petscii_flush(&pscreen);
+	pixels_screenshot(&pscreen.s, filename);
 	return 0;
 }
 

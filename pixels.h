@@ -16,6 +16,10 @@
 #define PIXELS_RENDERERFLAGS (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)
 #endif
 
+#ifdef PIXELS_SCREENSHOT
+#include "stb_image_write.h"
+#endif
+
 #ifndef _PIXELS_H_
 #define _PIXELS_H_
 
@@ -42,6 +46,13 @@ void pixels_realpos(struct pixels *p, int *x, int *y);
 #endif /* _PIXELS_H_ */
 
 #ifndef PIXELS_HEADER
+
+#ifdef PIXELS_SCREENSHOT
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+int pixels_screenshot(struct pixels *p, const char *filename);
+#endif /* PIXELS_SCREENSHOT */
 
 int pixels_init(struct pixels *p, const char *title, int width, int height)
 {
@@ -161,5 +172,28 @@ void pixels_destroy(struct pixels *p)
 	free(p->pixels);
 	memset(p, 0, sizeof (*p));
 }
+
+#ifdef PIXELS_SCREENSHOT
+int pixels_screenshot(struct pixels *p, const char *filename)
+{
+	int i;
+	char *const bitmap = calloc(3 * p->width * p->height, sizeof (uint8_t));
+	char *bp = bitmap;
+
+	if (!bitmap) return 0;
+
+
+	for (i = 0; i < p->width * p->height; i++) {
+		*bp++ = (p->pixels[i] >> 16) & 0xff;
+		*bp++ = (p->pixels[i] >> 8) & 0xff;
+		*bp++ = (p->pixels[i] >> 0) & 0xff;
+	}
+
+	int err = stbi_write_png(filename, p->width, p->height, 3, bitmap, 3 * p->width);
+	free(bitmap);
+
+	return err == 0;
+}
+#endif /* PIXELS_SCREENSHOT */
 
 #endif /* ifndef PIXELS_HEADER */

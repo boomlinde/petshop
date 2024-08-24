@@ -9,6 +9,7 @@
 #define PIXELS_INTEGERSCALE
 #define PIXELS_WINDOWSCALE 3
 #define PIXELS_RENDERERFLAGS (SDL_RENDERER_ACCELERATED)
+#define PIXELS_SCREENSHOT
 #include "pixels.h"
 
 struct petscii {

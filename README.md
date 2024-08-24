@@ -94,6 +94,7 @@ Commands
     C                 - Toggle between lower/upper case
     F1                - Save project
     F2                - Load project
+    F3                - Export PNG image
     1                 - Toggle drawing chars in stateful draw (see below)
     2                 - Toggle drawing colors in stateful draw (see below)
     3                 - Toggle drawing spaces in stateful draw (see below)

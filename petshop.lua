@@ -12,7 +12,7 @@ ctrl = false
 bgcolor = 0x6
 bordercolor = 0xe
 prompt = 'save: '
-oldfilename = 'blank.pet'
+promptinput = ''
 filename = 'blank.pet'
 lowercase = false
 
@@ -127,7 +127,7 @@ function redrawprompt()
 		promptpic.chars[x + (height - 1) * width] = 0x20
 		promptpic.colors[x + (height - 1) * width] = bgcolor + 11
 	end
-	local s = ascii2scr(prompt .. filename)
+	local s = ascii2scr(prompt .. promptinput)
 	for x=1,#s do
 		promptpic.chars[(x-1) + (height - 1) * width] = s[x]
 	end
@@ -342,6 +342,7 @@ editor = {
 		{ ev.TEXT, 'i', function () editor:startinsert() end },
 		{ ev.KEYDOWN, 'F1', function () editor:initsave() end },
 		{ ev.KEYDOWN, 'F2', function () editor:initload() end },
+		{ ev.KEYDOWN, 'F3', function () editor:initscreenshot() end },
 		{ ev.KEYDOWN, 'C', function () if editor.shift then setcase(not lowercase) end end },
 		{ ev.KEYDOWN, 'T', function () editor:fittobrush() end },
 		{ ev.KEYDOWN, 'M', function () editor:togglemouse() end },
@@ -411,22 +412,45 @@ editor = {
 
 	initsave = function (self)
 		self.prompting = true
+		promptinput = filename
 		prompt = "save: "
-		mx, my = redrawprompt()
+		local mx, my = redrawprompt()
 		ht.setmarker(mx, my, 1, 1)
 		ht.setlowercase(true)
 		self:draw()
-		self.afterprompt = function () saveproject(filename) end
+		self.afterprompt = function ()
+			filename = promptinput
+			saveproject(filename)
+		end
 	end,
 
 	initload = function (self)
 		self.prompting = true
+		promptinput = filename
 		prompt = "load: "
-		mx, my = redrawprompt()
+		local mx, my = redrawprompt()
 		ht.setmarker(mx, my, 1, 1)
 		ht.setlowercase(true)
 		self:draw()
-		self.afterprompt = function () loadproject(filename) end
+		self.afterprompt = function ()
+			filename = promptinput
+			loadproject(filename)
+		end
+	end,
+
+	initscreenshot = function (self)
+		self.prompting = true
+		promptinput = filename .. ".png"
+		prompt = "png: "
+		local mx, my = redrawprompt()
+		ht.setmarker(mx, my, 1, 1)
+		ht.setlowercase(true)
+		self:draw()
+		self.afterprompt = function ()
+			ht.setmarker(0, 0, 0, 0)
+			drawpictures({unpack(tip(picture))})
+			ht.screenshot(promptinput)
+		end
 	end,
 
 	flip = function (self)
@@ -497,21 +521,21 @@ editor = {
 				if event.key == 'Return' then
 					ht.setlowercase(lowercase)
 					self.prompting = false
-					oldfilename = filename
 					if self.afterprompt ~= nil then
 						self:afterprompt()
 						ht.setmarker(self.mx, self.my, self.mw, self.mh)
 						self:draw()
 					end
 				elseif event.key == 'Backspace' then
-					filename = string.sub(filename, 1, #filename - 1)
+					promptinput = string.sub(promptinput, 1, #promptinput - 1)
 				elseif event.key == 'Escape' then
 					ht.setlowercase(lowercase)
-					filename = oldfilename
 					self.prompting = false
+					ht.setmarker(self.mx, self.my, self.mw, self.mh)
+					self:draw()
 				end
 			elseif event.t == ev.TEXT then
-				filename = filename .. event.key
+				promptinput = promptinput .. event.key
 			elseif event.t == ev.MOUSEMOTION then
 				self:handlemouse(event.x, event.y)
 			end
@@ -818,7 +842,6 @@ end
 
 if #args > 0 then
 	filename = args[1]
-	oldfilename = args[1]
 	loadproject(filename)
 end
 
