@@ -878,10 +878,6 @@ for _,arg in pairs(args) do
 		end
 	end
 end
-if #args > 0 then
-	filename = args[1]
-	loadproject(filename)
-end
 
 drawpictures({unpack(tip(picture))})
 ht.setmarker(editor.mx, editor.my, editor.mw, editor.mh)
