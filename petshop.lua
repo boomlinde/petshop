@@ -847,6 +847,12 @@ function setup_palette()
 			end
 		end
 	else
+		local empty = ht.emptychar()
+		for y = 0,paletteheight-1 do
+			for x = 0,palettewidth-1 do
+				palettepic.chars[x + 1 + (y + 1) * width] = empty
+			end
+		end
 		for y = 0,15 do
 			for x = 0,15 do
 				palettepic.chars[x + 1 + (y + 1) * width] = x + y * 16

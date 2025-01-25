@@ -28,6 +28,7 @@ static int l_mousevisible(lua_State *L);
 static int l_screenshot(lua_State *L);
 static int l_loadcharset(lua_State *L);
 static int l_blockchar(lua_State *L);
+static int l_emptychar(lua_State *L);
 
 static void handle_event(lua_State *L);
 
@@ -69,7 +70,7 @@ main(int argc, char **argv)
 	luaL_openlibs(L);
 
 	// API functions
-	lua_createtable(L, 0, 15);
+	lua_createtable(L, 0, 16);
 	lua_pushstring(L, "setscreen"); lua_pushcfunction(L, l_setscreen); lua_settable(L, -3);
 	lua_pushstring(L, "setcolor"); lua_pushcfunction(L, l_setcolor); lua_settable(L, -3);
 	lua_pushstring(L, "setborder"); lua_pushcfunction(L, l_setborder); lua_settable(L, -3);
@@ -85,6 +86,7 @@ main(int argc, char **argv)
 	lua_pushstring(L, "screenshot"); lua_pushcfunction(L, l_screenshot); lua_settable(L, -3);
 	lua_pushstring(L, "loadcharset"); lua_pushcfunction(L, l_loadcharset); lua_settable(L, -3);
 	lua_pushstring(L, "blockchar"); lua_pushcfunction(L, l_blockchar); lua_settable(L, -3);
+	lua_pushstring(L, "emptychar"); lua_pushcfunction(L, l_emptychar); lua_settable(L, -3);
 	lua_setglobal(L, "ht");
 
 	// Colors
@@ -411,6 +413,13 @@ static int
 l_blockchar(lua_State *L)
 {
 	lua_pushnumber(L, petscii_getblock(&pscreen));
+	return 1;
+}
+
+static int
+l_emptychar(lua_State *L)
+{
+	lua_pushnumber(L, petscii_getempty(&pscreen));
 	return 1;
 }
 

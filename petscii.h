@@ -87,7 +87,8 @@ int petscii_init(struct petscii *p, uint8_t *chargen)
 	return 0;
 }
 
-static int petscii_bitcount(uint8_t b)
+static int
+petscii_bitcount(uint8_t b)
 {
 	int bits = 0;
 
@@ -98,7 +99,8 @@ static int petscii_bitcount(uint8_t b)
 	return bits;
 }
 
-uint8_t petscii_getblock(struct petscii *p)
+static uint8_t
+petscii_getblock(struct petscii *p)
 {
 	uint8_t *c = p->chargen;
 	int i, row;
@@ -115,6 +117,31 @@ uint8_t petscii_getblock(struct petscii *p)
 		if (bc > maxbitcount) {
 			bestchar = i;
 			maxbitcount = bc;
+		}
+		c += 8;
+	}
+
+	return bestchar;
+}
+
+static uint8_t
+petscii_getempty(struct petscii *p)
+{
+	uint8_t *c = p->chargen;
+	int i, row;
+	int minbitcount = 64;
+	uint8_t bestchar = 0;
+
+	for (i = 0; i < 256; i++) {
+		int bc = 0;
+		for (row = 0; row < 8; row++) {
+			bc += petscii_bitcount(c[row]);
+		}
+
+		if (bc == 0) return i;
+		if (bc < minbitcount) {
+			bestchar = i;
+			minbitcount = bc;
 		}
 		c += 8;
 	}
