@@ -36,7 +36,7 @@ static int running = 1;
 static int err = 0;
 static struct petscii pscreen;
 
-static uint8_t charset_buf[2048];
+static uint8_t charset_buf[4096];
 
 int
 main(int argc, char **argv)
@@ -45,6 +45,8 @@ main(int argc, char **argv)
 	lua_State *L = NULL;
 	int i, status, xo, yo, lastxo, lastyo, skip, xm, ym;
 	char *emulated;
+
+	memcpy(charset_buf, chargen_bin, 4096);
 
 	lastxo = 0;
 	lastyo = 0;
@@ -403,8 +405,8 @@ l_loadcharset(lua_State *L)
 	if (!strlen(filename)) return 0;
 	f = fopen(filename, "r");
 	if (f == NULL) return 0;
-	size_t nread = fread(charset_buf, 1, 2048, f);
-	if (nread == 2048) pscreen.chargen = charset_buf;
+	fread(charset_buf, 1, 4096, f);
+	pscreen.chargen = charset_buf;
 	fclose(f);
 	return 0;
 }
