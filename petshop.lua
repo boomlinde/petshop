@@ -874,6 +874,7 @@ for _,arg in pairs(args) do
 		if arg == "-c" then
 			argstate = "charset"
 		else
+			filename = arg
 			loadproject(arg)
 		end
 	end
