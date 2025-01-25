@@ -45,7 +45,7 @@ File format
 Running
 -------
 
-    $ petshop [project file]
+    $ petshop [-c charset_file] [project file]
 
 If the project file is omitted, petshop starts with a blank slate with a
 default path pointing at the current working directory ("blank.pet").

@@ -26,12 +26,16 @@ static int l_getmouse(lua_State *L);
 static int l_setmouse(lua_State *L);
 static int l_mousevisible(lua_State *L);
 static int l_screenshot(lua_State *L);
+static int l_loadcharset(lua_State *L);
+static int l_blockchar(lua_State *L);
 
 static void handle_event(lua_State *L);
 
 static int running = 1;
 static int err = 0;
 static struct petscii pscreen;
+
+static uint8_t charset_buf[2048];
 
 int
 main(int argc, char **argv)
@@ -65,7 +69,7 @@ main(int argc, char **argv)
 	luaL_openlibs(L);
 
 	// API functions
-	lua_createtable(L, 0, 13);
+	lua_createtable(L, 0, 15);
 	lua_pushstring(L, "setscreen"); lua_pushcfunction(L, l_setscreen); lua_settable(L, -3);
 	lua_pushstring(L, "setcolor"); lua_pushcfunction(L, l_setcolor); lua_settable(L, -3);
 	lua_pushstring(L, "setborder"); lua_pushcfunction(L, l_setborder); lua_settable(L, -3);
@@ -79,6 +83,8 @@ main(int argc, char **argv)
 	lua_pushstring(L, "setmouse"); lua_pushcfunction(L, l_setmouse); lua_settable(L, -3);
 	lua_pushstring(L, "mousevisible"); lua_pushcfunction(L, l_mousevisible); lua_settable(L, -3);
 	lua_pushstring(L, "screenshot"); lua_pushcfunction(L, l_screenshot); lua_settable(L, -3);
+	lua_pushstring(L, "loadcharset"); lua_pushcfunction(L, l_loadcharset); lua_settable(L, -3);
+	lua_pushstring(L, "blockchar"); lua_pushcfunction(L, l_blockchar); lua_settable(L, -3);
 	lua_setglobal(L, "ht");
 
 	// Colors
@@ -387,6 +393,27 @@ l_screenshot(lua_State *L)
 	return 0;
 }
 
+static int
+l_loadcharset(lua_State *L)
+{
+	FILE *f = NULL;
+	const char *filename = lua_tostring(L, 1);
+	if (!strlen(filename)) return 0;
+	f = fopen(filename, "r");
+	if (f == NULL) return 0;
+	size_t nread = fread(charset_buf, 1, 2048, f);
+	if (nread == 2048) pscreen.chargen = charset_buf;
+	fclose(f);
+	return 0;
+}
+
+static int
+l_blockchar(lua_State *L)
+{
+	lua_pushnumber(L, petscii_getblock(&pscreen));
+	return 1;
+}
+
 static void
 handle_event(lua_State *L)
 {
@@ -398,3 +425,4 @@ handle_event(lua_State *L)
 		running = 0;
 	}
 }
+

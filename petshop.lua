@@ -21,6 +21,7 @@ promptpic = { chars = {}, colors = {} }
 picture = { tip = 1, { chars = {} , colors = {}, }}
 scratch = { tip = 1, { chars = {} , colors = {}, }}
 
+use_palettemap = true
 palettemap = {
 	112,64,110,79,119,80,108,98,123,85,68,73,77,114,78,229,101,101,244,
 	93,87,93,116,91,106,225,32,97,71,81,72,107,86,115,244,116,84,212,
@@ -827,19 +828,50 @@ for y = 0,paletteheight+2 do
 	end
 end
 
-for x = 0,15 do
-	palettepic.colors[x + 1 + (paletteheight+1) * width] = x
-	palettepic.chars[x + 1 + (paletteheight+1) * width] = 0xa0
+function drawpalette_colors()
+	local bc = ht.blockchar()
+	for x = 0,15 do
+		palettepic.colors[x + 1 + (paletteheight+1) * width] = x
+		palettepic.chars[x + 1 + (paletteheight+1) * width] = bc
+	end
 end
+drawpalette_colors()
 
 recolorpalette()
 
-for y = 0,paletteheight-1 do
-	for x = 0,palettewidth-1 do
-		palettepic.chars[x + 1 + (y + 1) * width] = palettemap[1 + x + y * palettewidth]
+function setup_palette()
+	if use_palettemap then
+		for y = 0,paletteheight-1 do
+			for x = 0,palettewidth-1 do
+				palettepic.chars[x + 1 + (y + 1) * width] = palettemap[1 + x + y * palettewidth]
+			end
+		end
+	else
+		for y = 0,15 do
+			for x = 0,15 do
+				palettepic.chars[x + 1 + (y + 1) * width] = x + y * 16
+			end
+		end
 	end
 end
+setup_palette()
 
+argstate = "normal"
+for _,arg in pairs(args) do
+	if argstate == "charset" then
+		ht.loadcharset(arg)
+		argstate = "normal"
+		use_palettemap = false
+		setup_palette()
+		drawpalette_colors()
+	elseif argstate == "normal" then
+		if arg == "-c" then
+			argstate = "charset"
+		else
+			loadproject(arg)
+		end
+	end
+end
 if #args > 0 then
 	filename = args[1]
 	loadproject(filename)
