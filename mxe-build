@@ -29,7 +29,7 @@ if ! command -v zip &> /dev/null ; then
 	exit 1
 fi
 
-version=$(git describe --always --dirty)
+version=$(git describe --tag --dirty)
 
 rm -f petshop-*.zip
 make clean && make CC=$cc PKGCONFIG=$pkgconfig
