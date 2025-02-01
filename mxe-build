@@ -1,0 +1,48 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$MXEHOME" ]; then
+	>&2 echo "\$MXEHOME must be set to the mxe base directory"
+	exit 1
+fi
+
+cc=x86_64-w64-mingw32.shared-gcc
+strp=x86_64-w64-mingw32.shared-strip
+pkgconfig=x86_64-w64-mingw32.shared-pkg-config
+dlldir=$MXEHOME/usr/x86_64-w64-mingw32.shared/bin
+
+if ! command -v $cc &> /dev/null ; then
+	>&2 echo "missing $cc"
+	exit 1
+fi
+if ! command -v $strp &> /dev/null ; then
+	>&2 echo "missing $strp"
+	exit 1
+fi
+if ! command -v $pkgconfig &> /dev/null ; then
+	>&2 echo "missing $pkgconfig"
+	exit 1
+fi
+if ! command -v zip &> /dev/null ; then
+	>&2 echo "missing zip"
+	exit 1
+fi
+
+version=$(git describe --always --dirty)
+
+rm -f petshop-*.zip
+make clean && make CC=$cc PKGCONFIG=$pkgconfig
+mkdir -p dist/licenses
+cp petshop.exe dist/
+cp README.md dist/readme.txt
+cp SDL2.dll dist/
+cp $dlldir/lua53.dll dist/
+
+tar -Oaxf $MXEHOME/pkg/sdl2-release-2.0.20.tar.gz SDL-release-2.0.20/LICENSE.txt > dist/licenses/sdl2.txt
+
+$strp dist/petshop.exe
+pushd dist
+zip -r ../petshop-win-x64-$version.zip *
+popd
+make clean
