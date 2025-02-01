@@ -1,9 +1,11 @@
 BIN = petshop
-PKG = sdl2 luajit
+PKG = sdl2 lua
+
+PKGCONFIG ?= pkg-config
 
 CFLAGS  += -flto -Wall -O3
-CFLAGS  += $(shell pkg-config --cflags $(PKG))
-LDLIBS  += $(shell pkg-config --libs $(PKG))
+CFLAGS  += $(shell $(PKGCONFIG) --cflags $(PKG))
+LDLIBS  += $(shell $(PKGCONFIG) --libs $(PKG))
 LDFLAGS += -flto
 
 $(BIN): petshop.o
