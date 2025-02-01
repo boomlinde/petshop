@@ -1,5 +1,7 @@
 *.o
 petshop
 *.pet
+*.zip
 luacode.h
 chargendata.h
+dist
